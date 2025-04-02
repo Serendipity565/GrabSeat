@@ -1,0 +1,510 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/ccnu/login": {
+            "post": {
+                "description": "用户登录，返回 JWT 令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "用户登录",
+                "parameters": [
+                    {
+                        "description": "登录请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功返回 JWT 令牌",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/garb/findvacantseats": {
+            "post": {
+                "description": "查找空座位接口",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "garb"
+                ],
+                "summary": "查找空座位接口",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "查找空座位请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MFindVacantSeatsReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功返回空座位列表",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.MFindVacantSeatsResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/garb/isinlibrary": {
+            "post": {
+                "description": "检查目标用户当前是否在图书馆",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "garb"
+                ],
+                "summary": "检查目标用户当前是否在图书馆",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "检查目标用户当前是否在图书馆请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.IsInLibraryReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功返回在图书馆的时间段",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/garb/mgarb": {
+            "post": {
+                "description": "抢座接口",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "garb"
+                ],
+                "summary": "抢座接口",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "抢座请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.MGarbReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功返回抢座结果",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/garb/seatttoname": {
+            "post": {
+                "description": "座位号转名字接口",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "garb"
+                ],
+                "summary": "座位号转名字接口",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "座位号转名字请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.SeatToNameReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功返回座位号对应的名字",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.SeatToNameResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/garb/test": {
+            "get": {
+                "description": "测试接口",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "garb"
+                ],
+                "summary": "测试接口",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer Token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "test success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "request.IsInLibraryReq": {
+            "type": "object",
+            "required": [
+                "username"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MFindVacantSeatsReq": {
+            "type": "object",
+            "required": [
+                "end_time",
+                "start_time"
+            ],
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "is_tomorrow": {
+                    "type": "boolean"
+                },
+                "key_word": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.MGarbReq": {
+            "type": "object",
+            "required": [
+                "end_time",
+                "start_time"
+            ],
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "is_tomorrow": {
+                    "type": "boolean"
+                },
+                "key_word": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.SeatToNameReq": {
+            "type": "object",
+            "required": [
+                "seat_id"
+            ],
+            "properties": {
+                "seat_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.MFindVacantSeatsResp": {
+            "type": "object",
+            "properties": {
+                "seats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.Seat"
+                    }
+                }
+            }
+        },
+        "response.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "msg": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.SeatToNameResp": {
+            "type": "object",
+            "properties": {
+                "ts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.Ts"
+                    }
+                }
+            }
+        },
+        "service.Seat": {
+            "type": "object",
+            "properties": {
+                "devId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "ts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.Ts"
+                    }
+                }
+            }
+        },
+        "service.Ts": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
