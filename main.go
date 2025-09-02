@@ -1,6 +1,7 @@
 package main
 
 import (
+	"GrabSeat/service"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -9,12 +10,14 @@ import (
 func main() {
 	initViper()
 	app := InitApp()
+	//app.t.StartDailyTask()
 	app.r.Run(":8080")
 }
 
 type App struct {
 	// Logger *log.Logger
 	r *gin.Engine
+	t *service.Ticker
 }
 
 func initViper() {
