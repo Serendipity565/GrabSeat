@@ -8,14 +8,16 @@ import (
 var ProviderSet = wire.NewSet(NewJWTConfig, NewMiddlewareConfig)
 
 type JWTConfig struct {
-	SecretKey string `yaml:"secretKey"` //秘钥
-	Timeout   int    `yaml:"timeout"`   //过期时间
+	JwtKey  string `yaml:"jwtKey"` //秘钥
+	EncKey  string `yaml:"encKey"`
+	Timeout int    `yaml:"timeout"` //过期时间
 }
 
 func NewJWTConfig() JWTConfig {
 	return JWTConfig{
-		SecretKey: viper.GetString("jwt.secretKey"),
-		Timeout:   viper.GetInt("jwt.timeout"),
+		JwtKey:  viper.GetString("jwt.jwtKey"),
+		EncKey:  viper.GetString("jwt.encKey"),
+		Timeout: viper.GetInt("jwt.timeout"),
 	}
 }
 

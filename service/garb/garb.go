@@ -1,4 +1,4 @@
-package service
+package garb
 
 import (
 	"encoding/json"

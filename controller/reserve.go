@@ -4,10 +4,11 @@ import (
 	"GrabSeat/api/request"
 	"GrabSeat/api/response"
 	"GrabSeat/pkg/ijwt"
-	"GrabSeat/service"
-	"github.com/gin-gonic/gin"
+	"GrabSeat/service/garb"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ReserveController struct {
@@ -25,7 +26,7 @@ func NewReserveHandler() *ReserveController {
 // @Produce  json
 func (r *ReserveController) Reserve(c *gin.Context, req request.ReserveReq, uc ijwt.UserClaims) (response.Response, error) {
 	// 预约逻辑
-	bData, err := service.BeforeDate(req.Data)
+	bData, err := garb.BeforeDate(req.Data)
 	if err != nil {
 		return response.Response{
 			Code: http.StatusBadRequest,

@@ -2,6 +2,7 @@ package main
 
 import (
 	"GrabSeat/service"
+
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -21,7 +22,7 @@ type App struct {
 }
 
 func initViper() {
-	cfile := pflag.String("config", "config/config.yaml", "配置文件路径")
+	cfile := pflag.String("config", "config/config-example.yaml", "配置文件路径")
 	pflag.Parse()
 
 	viper.SetConfigType("yaml")

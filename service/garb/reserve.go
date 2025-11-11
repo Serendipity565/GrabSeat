@@ -1,4 +1,4 @@
-package service
+package garb
 
 import (
 	"time"
@@ -27,6 +27,6 @@ func (g *Grabber) Reserve(DevId string, delay time.Duration) {
 	go func() {
 		time.Sleep(delay)
 		// 预约座位
-		
+
 	}()
 }

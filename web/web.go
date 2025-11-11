@@ -25,11 +25,13 @@ func NewGinEngine(
 	lh LoginHandler,
 	corsMiddleware *middleware.CorsMiddleware,
 	authMiddleware *middleware.AuthMiddleware,
+	logMiddleware *middleware.LoggerMiddleware,
 ) *gin.Engine {
 	gin.ForceConsoleColor()
 	r := gin.Default()
 	// 跨域
 	r.Use(corsMiddleware.MiddlewareFunc())
+	r.Use(logMiddleware.MiddlewareFunc())
 
 	RegisterLoginRouter(r, lh)
 	RegisterGarbRouter(r, gh, authMiddleware.MiddlewareFunc())

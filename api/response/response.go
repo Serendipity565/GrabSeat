@@ -1,12 +1,12 @@
 package response
 
 import (
-	"GrabSeat/service"
+	"GrabSeat/service/garb"
 )
 
 // MFindVacantSeatsResp 模糊查找今天的空座位
 type MFindVacantSeatsResp struct {
-	Seats []service.Seat `json:"seats"`
+	Seats []garb.Seat `json:"seats"`
 }
 
 type LoginResp struct {
@@ -14,7 +14,7 @@ type LoginResp struct {
 }
 
 type SeatToNameResp struct {
-	Ts []service.Ts `json:"ts"`
+	Ts []garb.Ts `json:"ts"`
 }
 
 type Response struct {

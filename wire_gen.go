@@ -11,6 +11,8 @@ import (
 	"GrabSeat/controller"
 	"GrabSeat/middleware"
 	"GrabSeat/pkg/ijwt"
+	"GrabSeat/pkg/logger"
+	"GrabSeat/service"
 	"GrabSeat/web"
 )
 
@@ -24,9 +26,13 @@ func InitApp() *App {
 	middlewareConfig := config.NewMiddlewareConfig()
 	corsMiddleware := middleware.NewCorsMiddleware(middlewareConfig)
 	authMiddleware := middleware.NewAuthMiddleware(jwt)
-	engine := web.NewGinEngine(garbController, loginController, corsMiddleware, authMiddleware)
+	zapLogger := logger.NewZapLogger()
+	loggerMiddleware := middleware.NewLoggerMiddleware(zapLogger)
+	engine := web.NewGinEngine(garbController, loginController, corsMiddleware, authMiddleware, loggerMiddleware)
+	ticker := service.NewTicker()
 	app := &App{
 		r: engine,
+		t: ticker,
 	}
 	return app
 }

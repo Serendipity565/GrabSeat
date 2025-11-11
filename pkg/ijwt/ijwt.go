@@ -2,22 +2,31 @@ package ijwt
 
 import (
 	"GrabSeat/config"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
+	"io"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type JWT struct {
 	signingMethod jwt.SigningMethod // JWT 签名方法
 	rcExpiration  time.Duration     // 刷新令牌的过期时间，防止缓存过大
 	jwtKey        []byte            // 用于签署 JWT 的密钥
+	encKey        []byte            // 用于加密敏感信息的密钥
 }
 
 func NewJWT(conf config.JWTConfig) *JWT {
 	return &JWT{
 		signingMethod: jwt.SigningMethodHS256, //签名的加密方式
 		rcExpiration:  time.Duration(conf.Timeout) * time.Second,
-		jwtKey:        []byte(conf.SecretKey),
+		jwtKey:        []byte(conf.JwtKey),
+		encKey:        []byte(conf.EncKey),
 	}
 }
 
@@ -28,12 +37,16 @@ type UserClaims struct {
 }
 
 func (j *JWT) SetJWTToken(userid string, password string) (string, error) {
+	enPassword, err := j.encryptString(password)
+	if err != nil {
+		return "", err
+	}
 	uc := UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.rcExpiration)),
 		},
 		UserId:   userid,
-		Password: password,
+		Password: enPassword,
 	}
 
 	token := jwt.NewWithClaims(j.signingMethod, uc)
@@ -75,5 +88,72 @@ func (j *JWT) ParseToken(tokenStr string) (UserClaims, error) {
 		return UserClaims{}, errors.New("无法解析 token claims")
 	}
 
+	realPassword, err := j.decryptString(claims.Password)
+	if err != nil {
+		return UserClaims{}, err
+	}
+	claims.Password = realPassword
+
 	return *claims, nil
+}
+
+// 辅助：用 sha256 派生 32 字节 key
+func deriveKey(key []byte) []byte {
+	h := sha256.Sum256(key)
+	return h[:]
+}
+
+// encryptString 使用 AES-GCM 将明文加密并返回 base64( nonce | ciphertext )
+func (j *JWT) encryptString(plain string) (string, error) {
+	key := deriveKey(j.encKey)
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", err
+	}
+	ct := gcm.Seal(nil, nonce, []byte(plain), nil)
+	out := append(nonce, ct...)
+	return base64.StdEncoding.EncodeToString(out), nil
+}
+
+// decryptString 解密 base64( nonce | ciphertext ) 并返回明文
+func (j *JWT) decryptString(b64 string) (string, error) {
+	data, err := base64.StdEncoding.DecodeString(b64)
+	if err != nil {
+		return "", err
+	}
+	key := deriveKey(j.encKey)
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+	ns := gcm.NonceSize()
+	if len(data) < ns {
+		return "", errors.New("ciphertext too short")
+	}
+	nonce, ct := data[:ns], data[ns:]
+	pt, err := gcm.Open(nil, nonce, ct, nil)
+	if err != nil {
+		return "", err
+	}
+	return string(pt), nil
+}
+
+// DecryptPasswordFromClaims 对外：根据 UserClaims 解密出明文 password（供后续业务使用，先留一个钩子）
+func (j *JWT) DecryptPasswordFromClaims(uc *UserClaims) (string, error) {
+	if uc == nil || uc.Password == "" {
+		return "", nil
+	}
+	return j.decryptString(uc.Password)
 }
