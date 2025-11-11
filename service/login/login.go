@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -53,13 +52,4 @@ func Login2CAS(username, password string) error {
 	} else {
 		return fmt.Errorf("登录失败，未知错误")
 	}
-}
-
-func extractHidden(html, name string) string {
-	re := regexp.MustCompile(fmt.Sprintf(`name="%s" value="([^"]+)"`, name))
-	match := re.FindStringSubmatch(html)
-	if len(match) > 1 {
-		return match[1]
-	}
-	return ""
 }
