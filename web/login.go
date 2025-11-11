@@ -4,6 +4,7 @@ import (
 	"GrabSeat/api/request"
 	"GrabSeat/api/response"
 	"GrabSeat/pkg/ginx"
+
 	"github.com/gin-gonic/gin"
 )
 

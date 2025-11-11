@@ -1,10 +1,11 @@
-package service
+package garb
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"net/url"
+
+	"github.com/go-resty/resty/v2"
 )
 
 // Cache 缓存管理结构体

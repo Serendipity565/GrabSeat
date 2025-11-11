@@ -1,7 +1,8 @@
 # JWT 配置
 jwt:
-  secretKey: "serendipity"  # JWT 加密秘钥
-  timeout: 2592000          # 一个月过期一次
+  jwtKey: "****"  # JWT 加密秘钥
+  encKey: "****"  # JWT 加密敏感信息秘钥
+  timeout: 2592000  # 一个月过期一次
 
 # 中间件配置
 middleware:

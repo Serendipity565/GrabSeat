@@ -3,8 +3,9 @@ package ginx
 import (
 	"GrabSeat/pkg/ijwt"
 	"errors"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 const CTX = "claims"
@@ -51,11 +52,12 @@ func WrapReq[Req any, Resp any](fn func(*gin.Context, Req) (Resp, error)) gin.Ha
 		}
 
 		res, err := fn(ctx, req)
+		httpCode := ctx.Writer.Status()
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, res)
+			ctx.JSON(httpCode, res)
 			return
 		}
-		ctx.JSON(http.StatusOK, res)
+		ctx.JSON(httpCode, res)
 	}
 }
 

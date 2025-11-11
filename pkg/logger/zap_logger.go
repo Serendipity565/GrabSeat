@@ -2,13 +2,17 @@ package logger
 
 import (
 	"fmt"
+	"os"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
 )
 
 func NewZapLogger() *ZapLogger {
-	out := os.Stderr
+	out, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		out = os.Stderr
+	}
 	level := InfoLevel
 
 	al := zap.NewAtomicLevelAt(level)

@@ -4,8 +4,10 @@ import (
 	"GrabSeat/api/request"
 	"GrabSeat/api/response"
 	"GrabSeat/pkg/ijwt"
-	"github.com/gin-gonic/gin"
+	"GrabSeat/service/login"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type LoginController struct {
@@ -29,6 +31,14 @@ func NewLoginController(jwtHandler *ijwt.JWT) *LoginController {
 // @Router /ccnu/login [post]
 func (lc *LoginController) Login(c *gin.Context, req request.LoginRequest) (response.Response, error) {
 	// 验证用户名和密码（这里假设验证通过）
+	err := login.Login2CAS(req.Username, req.Password)
+	if err != nil {
+		return response.Response{
+			Code: http.StatusUnauthorized,
+			Msg:  "用户名或密码错误",
+			Data: nil,
+		}, err
+	}
 	// 生成JWT令牌
 	token, err := lc.jwtHandler.SetJWTToken(req.Username, req.Password)
 	if err != nil {
@@ -39,11 +49,10 @@ func (lc *LoginController) Login(c *gin.Context, req request.LoginRequest) (resp
 		}, err
 	}
 
+	c.Header("Authorization", token)
 	return response.Response{
 		Code: http.StatusOK,
 		Msg:  "登录成功",
-		Data: map[string]string{
-			"token": "Bearer " + token,
-		},
+		Data: nil,
 	}, nil
 }
