@@ -60,6 +60,13 @@ func ToCustomError(err error) *CustomError {
 	}
 
 	// 如果不是 CustomError 类型，返回一个通用的内部错误
+	// skip=4 是为了获取 ToCustomError 的调用者的调用者的调用者的信息，
+	// 即原始错误发生的位置。调用栈如下：
+	// 0: runtime.Caller
+	// 1: getCallerInfo
+	// 2: ToCustomError
+	// 3: 调用 ToCustomError 的函数
+	// 4: 调用该函数的上层（即原始错误发生处）
 	file, line, function := getCallerInfo(4)
 	return &CustomError{
 		HttpCode: http.StatusInternalServerError,

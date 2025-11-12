@@ -7,20 +7,19 @@ import (
 
 const (
 	UserIdOrPasswordErrorCode = iota + 40001
-	UnAuthoredErrorCode
+	UnauthorizedErrorCode
 )
 
 const (
 	InternalServerErrorCode = iota + 50001
-	ErrorTypeErrorCode
 )
 
 var (
 	UserIdOrPasswordError = func(err error) error {
 		return errorx.New(http.StatusUnauthorized, UserIdOrPasswordErrorCode, "账号或者密码错误!", err)
 	}
-	UnAuthoredError = func(err error) error {
-		return errorx.New(http.StatusUnauthorized, UnAuthoredErrorCode, "Authorization错误", err)
+	UnauthorizedError = func(err error) error {
+		return errorx.New(http.StatusUnauthorized, UnauthorizedErrorCode, "Authorization错误", err)
 	}
 )
 

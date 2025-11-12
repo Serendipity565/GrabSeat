@@ -26,7 +26,7 @@ func (lm *LoggerMiddleware) MiddlewareFunc() gin.HandlerFunc {
 		ctx.Next() // 处理请求
 
 		cost := time.Since(start)
-		if ctx.Errors != nil {
+		if len(ctx.Errors) > 0 {
 			// 有错误记录错误日志
 			lm.log.Error("HTTP request error",
 				zap.String("method", ctx.Request.Method),
