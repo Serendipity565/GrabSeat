@@ -3,9 +3,9 @@ package controller
 import (
 	"GrabSeat/api/request"
 	"GrabSeat/api/response"
+	"GrabSeat/errs"
 	"GrabSeat/pkg/ijwt"
 	"GrabSeat/service/login"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,26 +33,11 @@ func (lc *LoginController) Login(c *gin.Context, req request.LoginRequest) (resp
 	// 验证用户名和密码（这里假设验证通过）
 	err := login.Login2CAS(req.Username, req.Password)
 	if err != nil {
-		return response.Response{
-			Code: http.StatusUnauthorized,
-			Msg:  "用户名或密码错误",
-			Data: nil,
-		}, err
+		return response.Response{}, errs.UserIdOrPasswordError(err)
 	}
 	// 生成JWT令牌
-	token, err := lc.jwtHandler.SetJWTToken(req.Username, req.Password)
-	if err != nil {
-		return response.Response{
-			Code: http.StatusInternalServerError,
-			Msg:  "生成令牌失败",
-			Data: nil,
-		}, err
-	}
+	token, _ := lc.jwtHandler.SetJWTToken(req.Username, req.Password)
 
 	c.Header("Authorization", token)
-	return response.Response{
-		Code: http.StatusOK,
-		Msg:  "登录成功",
-		Data: nil,
-	}, nil
+	return response.Response{}, nil
 }

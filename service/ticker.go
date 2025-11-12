@@ -19,9 +19,9 @@ func NewTicker() *Ticker {
 //func (t Ticker) StartDailyTask() {
 //	// 每天18:00执行
 //	spec := "0 0 18 * * *"
-//	_, err := t.c.AddFunc(spec, task)
-//	if err != nil {
-//		fmt.Println("定时任务添加失败:", err)
+//	_, errs := t.c.AddFunc(spec, task)
+//	if errs != nil {
+//		fmt.Println("定时任务添加失败:", errs)
 //		return
 //	}
 //

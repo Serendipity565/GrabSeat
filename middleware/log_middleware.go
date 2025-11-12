@@ -18,7 +18,7 @@ func NewLoggerMiddleware(log logger.Logger) *LoggerMiddleware {
 	}
 }
 
-// GinLogger 处理响应逻辑
+// MiddlewareFunc 处理响应逻辑
 func (lm *LoggerMiddleware) MiddlewareFunc() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		start := time.Now()
@@ -26,12 +26,26 @@ func (lm *LoggerMiddleware) MiddlewareFunc() gin.HandlerFunc {
 		ctx.Next() // 处理请求
 
 		cost := time.Since(start)
-		lm.log.Info("HTTP request",
-			zap.String("method", ctx.Request.Method),
-			zap.String("path", path),
-			zap.Int("status", ctx.Writer.Status()),
-			zap.String("client_ip", ctx.ClientIP()),
-			zap.Duration("latency", cost),
-		)
+		if ctx.Errors != nil {
+			// 有错误记录错误日志
+			lm.log.Error("HTTP request error",
+				zap.String("method", ctx.Request.Method),
+				zap.String("path", path),
+				zap.Int("status", ctx.Writer.Status()),
+				zap.String("client_ip", ctx.ClientIP()),
+				zap.Duration("latency", cost),
+				zap.String("errors", ctx.Errors.String()),
+			)
+		} else {
+			// 正常请求记录访问日志
+			lm.log.Info("HTTP request success",
+				zap.String("method", ctx.Request.Method),
+				zap.String("path", path),
+				zap.Int("status", ctx.Writer.Status()),
+				zap.String("client_ip", ctx.ClientIP()),
+				zap.Duration("latency", cost),
+			)
+		}
+
 	}
 }
