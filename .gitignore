@@ -1,6 +1,11 @@
-*_test.go
-*.test
-/.idea
+# OS General
+Thumbs.db
 .DS_Store
+
+# Develop tools
+.vscode/
+.idea/
+
 config/config.yaml
-app.log
+
+*.log
