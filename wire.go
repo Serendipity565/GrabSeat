@@ -4,11 +4,11 @@ package main
 
 import (
 	"GrabSeat/config"
+	"GrabSeat/controller"
 	"GrabSeat/middleware"
 	"GrabSeat/pkg/ijwt"
 	"GrabSeat/pkg/logger"
 	"GrabSeat/service"
-	"GrabSeat/web"
 
 	"github.com/google/wire"
 )
@@ -23,7 +23,7 @@ func InitApp() *App {
 		middleware.NewAuthMiddleware,
 		middleware.NewLoggerMiddleware,
 		service.ProviderSet,
-		web.ProviderSet,
+		controller.ProviderSet,
 	)
 	return &App{}
 }

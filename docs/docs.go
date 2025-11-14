@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/ccnu/login": {
+        "/api/v1/ccnu/login": {
             "post": {
                 "description": "用户登录，返回 JWT 令牌",
                 "consumes": [
@@ -76,7 +76,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/garb/findvacantseats": {
+        "/api/v1/garb/findvacantseats": {
             "post": {
                 "description": "查找空座位接口",
                 "consumes": [
@@ -92,7 +92,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer Token",
+                        "description": "Bearer {{JWT}}",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
@@ -141,7 +141,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/garb/isinlibrary": {
+        "/api/v1/garb/isinlibrary": {
             "post": {
                 "description": "检查目标用户当前是否在图书馆",
                 "consumes": [
@@ -157,7 +157,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer Token",
+                        "description": "Bearer {{JWT}}",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
@@ -206,7 +206,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/garb/mgarb": {
+        "/api/v1/garb/mgarb": {
             "post": {
                 "description": "抢座接口",
                 "consumes": [
@@ -222,7 +222,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer Token",
+                        "description": "Bearer {{JWT}}",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
@@ -271,7 +271,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/garb/seatttoname": {
+        "/api/v1/garb/seatttoname": {
             "post": {
                 "description": "座位号转名字接口",
                 "consumes": [
@@ -287,7 +287,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer Token",
+                        "description": "Bearer {{JWT}}",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
@@ -336,7 +336,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/garb/test": {
+        "/api/v1/garb/test": {
             "get": {
                 "description": "测试接口",
                 "consumes": [
@@ -352,7 +352,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer Token",
+                        "description": "Bearer {{JWT}}",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
@@ -370,6 +370,40 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "garb.Seat": {
+            "type": "object",
+            "properties": {
+                "devId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "ts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/garb.Ts"
+                    }
+                }
+            }
+        },
+        "garb.Ts": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
         "request.IsInLibraryReq": {
             "type": "object",
             "required": [
@@ -455,7 +489,7 @@ const docTemplate = `{
                 "seats": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/service.Seat"
+                        "$ref": "#/definitions/garb.Seat"
                     }
                 }
             }
@@ -478,42 +512,8 @@ const docTemplate = `{
                 "ts": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/service.Ts"
+                        "$ref": "#/definitions/garb.Ts"
                     }
-                }
-            }
-        },
-        "service.Seat": {
-            "type": "object",
-            "properties": {
-                "devId": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "ts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/service.Ts"
-                    }
-                }
-            }
-        },
-        "service.Ts": {
-            "type": "object",
-            "properties": {
-                "end": {
-                    "type": "string"
-                },
-                "owner": {
-                    "type": "string"
-                },
-                "start": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
                 }
             }
         }

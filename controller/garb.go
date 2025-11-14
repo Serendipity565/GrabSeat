@@ -3,6 +3,7 @@ package controller
 import (
 	"GrabSeat/api/request"
 	"GrabSeat/api/response"
+	"GrabSeat/pkg/ginx"
 	"GrabSeat/pkg/ijwt"
 	"GrabSeat/service/garb"
 	"fmt"
@@ -21,6 +22,17 @@ func NewGarbHandler() *GarbController {
 	return &GarbController{}
 }
 
+func (gc *GarbController) RegisterGarbRouter(r *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
+	c := r.Group("/garb")
+	{
+		c.GET("/test", authMiddleware, ginx.WrapClaims(gc.Test))
+		c.POST("/findvacantseats", authMiddleware, ginx.WrapClaimsAndReq(gc.FindVacantSeats))
+		c.POST("/seatttoname", authMiddleware, ginx.WrapClaimsAndReq(gc.SeatToName))
+		c.POST("/isinlibrary", authMiddleware, ginx.WrapClaimsAndReq(gc.IsInLibrary))
+		c.POST("/mgarb", authMiddleware, ginx.WrapClaimsAndReq(gc.MGarb))
+	}
+}
+
 // Test 测试接口
 // @Summary 测试接口
 // @Description 测试接口
@@ -29,8 +41,8 @@ func NewGarbHandler() *GarbController {
 // @Produce  json
 // @Param Authorization header string true "Bearer {{JWT}}"
 // @Success 200 {string} string "test success"
-// @Router /garb/test [get]
-func (g *GarbController) Test(c *gin.Context, uc ijwt.UserClaims) (response.Response, error) {
+// @Router /api/v1/garb/test [get]
+func (gc *GarbController) Test(c *gin.Context, uc ijwt.UserClaims) (response.Response, error) {
 	return response.Response{
 		Code: 200,
 		Msg:  "test success",
@@ -49,8 +61,8 @@ func (g *GarbController) Test(c *gin.Context, uc ijwt.UserClaims) (response.Resp
 // @Success 200 {object} response.Response{data=response.MFindVacantSeatsResp} "成功返回空座位列表"
 // @Failure 400 {object} response.Response "请求参数错误"
 // @Failure 500 {object} response.Response "服务器内部错误"
-// @Router /garb/findvacantseats [post]
-func (g *GarbController) FindVacantSeats(c *gin.Context, req request.MFindVacantSeatsReq, uc ijwt.UserClaims) (response.Response, error) {
+// @Router /api/v1/garb/findvacantseats [post]
+func (gc *GarbController) FindVacantSeats(c *gin.Context, req request.MFindVacantSeatsReq, uc ijwt.UserClaims) (response.Response, error) {
 	if req.StartTime >= req.EndTime {
 		return response.Response{
 			Code: http.StatusBadRequest,
@@ -81,8 +93,8 @@ func (g *GarbController) FindVacantSeats(c *gin.Context, req request.MFindVacant
 // @Success 200 {object} response.Response{data=response.SeatToNameResp} "成功返回座位号对应的名字"
 // @Failure 400 {object} response.Response "请求参数错误"
 // @Failure 500 {object} response.Response "服务器内部错误"
-// @Router /garb/seatttoname [post]
-func (g *GarbController) SeatToName(c *gin.Context, req request.SeatToNameReq, uc ijwt.UserClaims) (response.Response, error) {
+// @Router /api/v1/garb/seatttoname [post]
+func (gc *GarbController) SeatToName(c *gin.Context, req request.SeatToNameReq, uc ijwt.UserClaims) (response.Response, error) {
 	grabber := garb.NewGrabber(Areas, false, "08:00", "22:00") //这里的是时间设置不重要
 	grabber.StartFlushClient(uc.UserId, uc.Password, time.Second*10)
 	ts := grabber.SeatToName(req.SeatId)
@@ -106,8 +118,8 @@ func (g *GarbController) SeatToName(c *gin.Context, req request.SeatToNameReq, u
 // @Success 200 {object} response.Response{data=string} "成功返回在图书馆的时间段"
 // @Failure 400 {object} response.Response "请求参数错误"
 // @Failure 500 {object} response.Response "服务器内部错误"
-// @Router /garb/isinlibrary [post]
-func (g *GarbController) IsInLibrary(c *gin.Context, req request.IsInLibraryReq, uc ijwt.UserClaims) (response.Response, error) {
+// @Router /api/v1/garb/isinlibrary [post]
+func (gc *GarbController) IsInLibrary(c *gin.Context, req request.IsInLibraryReq, uc ijwt.UserClaims) (response.Response, error) {
 	grabber := garb.NewGrabber(Areas, false, "08:00", "22:00") //这里的是时间设置不重要
 	grabber.StartFlushClient(uc.UserId, uc.Password, time.Second*10)
 	ot := grabber.IsInLibrary(req.Username)
@@ -137,8 +149,8 @@ func (g *GarbController) IsInLibrary(c *gin.Context, req request.IsInLibraryReq,
 // @Success 200 {object} response.Response{data=string} "成功返回抢座结果"
 // @Failure 400 {object} response.Response "请求参数错误"
 // @Failure 500 {object} response.Response "服务器内部错误"
-// @Router /garb/mgarb [post]
-func (g *GarbController) MGarb(c *gin.Context, req request.MGarbReq, uc ijwt.UserClaims) (response.Response, error) {
+// @Router /api/v1/garb/mgarb [post]
+func (gc *GarbController) MGarb(c *gin.Context, req request.MGarbReq, uc ijwt.UserClaims) (response.Response, error) {
 	if req.StartTime >= req.EndTime {
 		return response.Response{
 			Code: http.StatusBadRequest,
