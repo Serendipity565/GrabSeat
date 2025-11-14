@@ -3,6 +3,7 @@ package controller
 import (
 	"GrabSeat/api/request"
 	"GrabSeat/api/response"
+	"GrabSeat/pkg/ginx"
 	"GrabSeat/pkg/ijwt"
 	"GrabSeat/service/garb"
 	"net/http"
@@ -18,13 +19,20 @@ func NewReserveHandler() *ReserveController {
 	return &ReserveController{}
 }
 
+func (rc *ReserveController) RegisterReserveRouter(r *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
+	c := r.Group("/reserve")
+	{
+		c.POST("/reserve", authMiddleware, ginx.WrapClaimsAndReq(rc.Reserve))
+	}
+}
+
 // Reserve 预约座位接口
 // @Summary 预约座位接口
 // @Description 预约5天内座位接口
 // @Tags reserve
 // @Accept  json
 // @Produce  json
-func (r *ReserveController) Reserve(c *gin.Context, req request.ReserveReq, uc ijwt.UserClaims) (response.Response, error) {
+func (rc *ReserveController) Reserve(c *gin.Context, req request.ReserveReq, uc ijwt.UserClaims) (response.Response, error) {
 	// 预约逻辑
 	bData, err := garb.BeforeDate(req.Data)
 	if err != nil {

@@ -1,4 +1,26 @@
 definitions:
+  garb.Seat:
+    properties:
+      devId:
+        type: string
+      title:
+        type: string
+      ts:
+        items:
+          $ref: '#/definitions/garb.Ts'
+        type: array
+    type: object
+  garb.Ts:
+    properties:
+      end:
+        type: string
+      owner:
+        type: string
+      start:
+        type: string
+      state:
+        type: string
+    type: object
   request.IsInLibraryReq:
     properties:
       username:
@@ -55,7 +77,7 @@ definitions:
     properties:
       seats:
         items:
-          $ref: '#/definitions/service.Seat'
+          $ref: '#/definitions/garb.Seat'
         type: array
     type: object
   response.Response:
@@ -70,35 +92,13 @@ definitions:
     properties:
       ts:
         items:
-          $ref: '#/definitions/service.Ts'
+          $ref: '#/definitions/garb.Ts'
         type: array
-    type: object
-  service.Seat:
-    properties:
-      devId:
-        type: string
-      title:
-        type: string
-      ts:
-        items:
-          $ref: '#/definitions/service.Ts'
-        type: array
-    type: object
-  service.Ts:
-    properties:
-      end:
-        type: string
-      owner:
-        type: string
-      start:
-        type: string
-      state:
-        type: string
     type: object
 info:
   contact: {}
 paths:
-  /ccnu/login:
+  /api/v1/ccnu/login:
     post:
       consumes:
       - application/json
@@ -135,13 +135,13 @@ paths:
       summary: 用户登录
       tags:
       - auth
-  /garb/findvacantseats:
+  /api/v1/garb/findvacantseats:
     post:
       consumes:
       - application/json
       description: 查找空座位接口
       parameters:
-      - description: Bearer Token
+      - description: Bearer {{JWT}}
         in: header
         name: Authorization
         required: true
@@ -175,13 +175,13 @@ paths:
       summary: 查找空座位接口
       tags:
       - garb
-  /garb/isinlibrary:
+  /api/v1/garb/isinlibrary:
     post:
       consumes:
       - application/json
       description: 检查目标用户当前是否在图书馆
       parameters:
-      - description: Bearer Token
+      - description: Bearer {{JWT}}
         in: header
         name: Authorization
         required: true
@@ -215,13 +215,13 @@ paths:
       summary: 检查目标用户当前是否在图书馆
       tags:
       - garb
-  /garb/mgarb:
+  /api/v1/garb/mgarb:
     post:
       consumes:
       - application/json
       description: 抢座接口
       parameters:
-      - description: Bearer Token
+      - description: Bearer {{JWT}}
         in: header
         name: Authorization
         required: true
@@ -255,13 +255,13 @@ paths:
       summary: 抢座接口
       tags:
       - garb
-  /garb/seatttoname:
+  /api/v1/garb/seatttoname:
     post:
       consumes:
       - application/json
       description: 座位号转名字接口
       parameters:
-      - description: Bearer Token
+      - description: Bearer {{JWT}}
         in: header
         name: Authorization
         required: true
@@ -295,13 +295,13 @@ paths:
       summary: 座位号转名字接口
       tags:
       - garb
-  /garb/test:
+  /api/v1/garb/test:
     get:
       consumes:
       - application/json
       description: 测试接口
       parameters:
-      - description: Bearer Token
+      - description: Bearer {{JWT}}
         in: header
         name: Authorization
         required: true

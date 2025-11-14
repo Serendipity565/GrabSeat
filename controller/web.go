@@ -1,8 +1,8 @@
-package web
+package controller
 
 import (
-	"GrabSeat/controller"
 	"GrabSeat/middleware"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 )
@@ -13,27 +13,27 @@ import (
 // @host localhost:8080
 
 var ProviderSet = wire.NewSet(
+	NewLoginController,
+	NewGarbHandler,
 	NewGinEngine,
-	controller.NewLoginController,
-	wire.Bind(new(LoginHandler), new(*controller.LoginController)),
-	controller.NewGarbHandler,
-	wire.Bind(new(GarbHandler), new(*controller.GarbController)),
 )
 
 func NewGinEngine(
-	gh GarbHandler,
-	lh LoginHandler,
+	lc *LoginController,
+	gc *GarbController,
+
 	corsMiddleware *middleware.CorsMiddleware,
 	authMiddleware *middleware.AuthMiddleware,
 	logMiddleware *middleware.LoggerMiddleware,
 ) *gin.Engine {
 	gin.ForceConsoleColor()
 	r := gin.Default()
+	api := r.Group("/api/v1")
 	// 跨域
 	r.Use(corsMiddleware.MiddlewareFunc())
 	r.Use(logMiddleware.MiddlewareFunc())
 
-	RegisterLoginRouter(r, lh)
-	RegisterGarbRouter(r, gh, authMiddleware.MiddlewareFunc())
+	lc.RegisterLoginRouter(api)
+	gc.RegisterGarbRouter(api, authMiddleware.MiddlewareFunc())
 	return r
 }

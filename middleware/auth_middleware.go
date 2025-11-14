@@ -4,8 +4,9 @@ import (
 	"GrabSeat/pkg/ginx"
 	"GrabSeat/pkg/ijwt"
 	"errors"
-	"github.com/gin-gonic/gin"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type AuthMiddleware struct {

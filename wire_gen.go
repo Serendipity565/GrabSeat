@@ -13,22 +13,21 @@ import (
 	"GrabSeat/pkg/ijwt"
 	"GrabSeat/pkg/logger"
 	"GrabSeat/service"
-	"GrabSeat/web"
 )
 
 // Injectors from wire.go:
 
 func InitApp() *App {
-	garbController := controller.NewGarbHandler()
 	jwtConfig := config.NewJWTConfig()
 	jwt := ijwt.NewJWT(jwtConfig)
 	loginController := controller.NewLoginController(jwt)
+	garbController := controller.NewGarbHandler()
 	middlewareConfig := config.NewMiddlewareConfig()
 	corsMiddleware := middleware.NewCorsMiddleware(middlewareConfig)
 	authMiddleware := middleware.NewAuthMiddleware(jwt)
 	zapLogger := logger.NewZapLogger()
 	loggerMiddleware := middleware.NewLoggerMiddleware(zapLogger)
-	engine := web.NewGinEngine(garbController, loginController, corsMiddleware, authMiddleware, loggerMiddleware)
+	engine := controller.NewGinEngine(loginController, garbController, corsMiddleware, authMiddleware, loggerMiddleware)
 	ticker := service.NewTicker()
 	app := &App{
 		r: engine,
