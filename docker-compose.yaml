@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  grabseat:
+    image: crpi-sr2lroozs2i0nbuc.cn-hangzhou.personal.cr.aliyuncs.com/serendipity565/serendipity565:grabseat
+    container_name: grabseat
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - ./configs/config.yaml:/app/config/config.yaml
