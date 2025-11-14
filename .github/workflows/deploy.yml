@@ -54,6 +54,7 @@ jobs:
           tags: ${{ secrets.ALIYUN_REGISTRY }}/serendipity565/serendipity565:grabseat
 
   deploy:
+    if : github.event_name == 'push'
     runs-on: ubuntu-latest
     needs:
       - build
