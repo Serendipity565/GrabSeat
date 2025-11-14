@@ -9,6 +9,7 @@ import (
 )
 
 func NewZapLogger() *ZapLogger {
+	// TODO 后续看需求改成日期日志等
 	out, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		out = os.Stderr
