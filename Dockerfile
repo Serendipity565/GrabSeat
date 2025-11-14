@@ -16,9 +16,7 @@ COPY . .
 # 下载依赖并构建二进制
 RUN go mod tidy && go build -o grabseat
 
-# ========================
 # 第二阶段：生成最终镜像
-# ========================
 FROM alpine:latest
 
 # 安装时区
