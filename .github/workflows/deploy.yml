@@ -1,17 +1,33 @@
 name: Build && Deploy
 
 on:
-  workflow_run:
-    workflows: ["Go"]
-    types:
-      - completed
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
 
-  build:
-
+  test:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - test
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -38,9 +54,8 @@ jobs:
           tags: ${{ secrets.ALIYUN_REGISTRY }}/serendipity565/serendipity565:grabseat
 
   deploy:
-  
+    if : github.event_name == 'push'
     runs-on: ubuntu-latest
-    
     needs:
       - build
       
@@ -56,9 +71,10 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SERVER_ADDR }} >> ~/.ssh/known_hosts
 
-      - name: SSH into server and deploy
+      - name: SSH and deploy
         run: |
           ssh ubuntu@${{ secrets.SERVER_ADDR }} "
+            cd grabseat
             docker login -u '${{ secrets.ALIYUN_USERNAME }}' -p '${{ secrets.ALIYUN_PASSWORD }}' ${{ secrets.ALIYUN_REGISTRY }};
             docker compose pull;
             docker compose up -d;
