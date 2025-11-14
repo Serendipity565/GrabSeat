@@ -19,7 +19,7 @@ func NewReserveHandler() *ReserveController {
 	return &ReserveController{}
 }
 
-func (rc ReserveController) RegisterReserveRouter(r *gin.Engine, authMiddleware gin.HandlerFunc) {
+func (rc *ReserveController) RegisterReserveRouter(r *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
 	c := r.Group("/reserve")
 	{
 		c.POST("/reserve", authMiddleware, ginx.WrapClaimsAndReq(rc.Reserve))
