@@ -1,17 +1,33 @@
 name: Build && Deploy
 
 on:
-  workflow_run:
-    workflows: ["Go"]
-    types:
-      - completed
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
 
-  build:
-
+  test:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24'
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - test
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -38,9 +54,7 @@ jobs:
           tags: ${{ secrets.ALIYUN_REGISTRY }}/serendipity565/serendipity565:grabseat
 
   deploy:
-  
     runs-on: ubuntu-latest
-    
     needs:
       - build
       
