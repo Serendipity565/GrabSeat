@@ -9,3 +9,4 @@ services:
     restart: always
     volumes:
       - ./configs/config.yaml:/app/config/config.yaml
+      - ./app.log:/app/app.log
