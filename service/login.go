@@ -12,7 +12,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-//go:generate mockgen -destination=/mocks/mock_login_service.go -package=mocks github.com/Serendipity565/service LoginService
+//go:generate mockgen -destination=./mocks/mock_login_service.go -package=mocks github.com/Serendipity565/GrabSeat/service LoginService
 type LoginService interface {
 	Login2CAS(username, password string) (*http.Client, error)
 }
