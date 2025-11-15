@@ -1,22 +1,26 @@
 package controller
 
 import (
-	"GrabSeat/api/request"
-	"GrabSeat/api/response"
-	"GrabSeat/errs"
-	"GrabSeat/pkg/ginx"
-	"GrabSeat/pkg/ijwt"
-	"GrabSeat/service/login"
+	"github.com/Serendipity565/GrabSeat/api/request"
+	"github.com/Serendipity565/GrabSeat/api/response"
+	"github.com/Serendipity565/GrabSeat/errs"
+	"github.com/Serendipity565/GrabSeat/pkg/ginx"
+	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
+	"github.com/Serendipity565/GrabSeat/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 type LoginController struct {
+	ls         service.LoginService
 	jwtHandler *ijwt.JWT
 }
 
-func NewLoginController(jwtHandler *ijwt.JWT) *LoginController {
-	return &LoginController{jwtHandler: jwtHandler}
+func NewLoginController(jwtHandler *ijwt.JWT, ls service.LoginService) *LoginController {
+	return &LoginController{
+		ls:         ls,
+		jwtHandler: jwtHandler,
+	}
 }
 
 func (lc *LoginController) RegisterLoginRouter(r *gin.RouterGroup) {
@@ -39,7 +43,7 @@ func (lc *LoginController) RegisterLoginRouter(r *gin.RouterGroup) {
 // @Router /api/v1/ccnu/login [post]
 func (lc *LoginController) Login(c *gin.Context, req request.LoginRequest) (response.Response, error) {
 	// 验证用户名和密码（这里假设验证通过）
-	err := login.Login2CAS(req.Username, req.Password)
+	_, err := lc.ls.Login2CAS(req.Username, req.Password)
 	if err != nil {
 		return response.Response{}, errs.UserIdOrPasswordError(err)
 	}

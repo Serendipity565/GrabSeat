@@ -1,14 +1,15 @@
 package controller
 
 import (
-	"GrabSeat/api/request"
-	"GrabSeat/api/response"
-	"GrabSeat/pkg/ginx"
-	"GrabSeat/pkg/ijwt"
-	"GrabSeat/service/garb"
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/Serendipity565/GrabSeat/api/request"
+	"github.com/Serendipity565/GrabSeat/api/response"
+	"github.com/Serendipity565/GrabSeat/pkg/ginx"
+	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
+	"github.com/Serendipity565/GrabSeat/service/garb"
 
 	"github.com/gin-gonic/gin"
 )

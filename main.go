@@ -1,7 +1,7 @@
 package main
 
 import (
-	"GrabSeat/service"
+	"github.com/Serendipity565/GrabSeat/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/pflag"

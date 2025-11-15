@@ -1,4 +1,4 @@
-package login
+package service
 
 import (
 	"fmt"
@@ -7,24 +7,45 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
-func Login2CAS(username, password string) error {
+//go:generate mockgen -destination=./mocks/mock_login_service.go -package=mocks github.com/Serendipity565/GrabSeat/service LoginService
+type LoginService interface {
+	Login2CAS(username, password string) (*http.Client, error)
+}
+
+type loginService struct {
+}
+
+func NewLoginService() LoginService {
+	return &loginService{}
+}
+
+func (ls *loginService) Login2CAS(username, password string) (*http.Client, error) {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{
-		Jar: jar,
+		Jar:     jar,
+		Timeout: 10 * time.Second,
 	}
+
 	casLogin := "https://account.ccnu.edu.cn/cas/login"
-	resp, _ := client.Get(casLogin)
+
+	// 第一次 GET 获取登录页面，提取lt和execution参数
+	resp, err := client.Get(casLogin)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
-	resp.Body.Close()
 
 	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(string(body)))
 	lt, _ := doc.Find(`input[name="lt"]`).Attr("value")
 	exec, _ := doc.Find(`input[name="execution"]`).Attr("value")
 
+	// 构造登录表单
 	data := url.Values{}
 	data.Set("username", username)
 	data.Set("password", password)
@@ -39,6 +60,7 @@ func Login2CAS(username, password string) error {
 	req.Header.Set("Origin", "https://account.ccnu.edu.cn")
 	req.Header.Set("Referer", casLogin)
 
+	// 提交登录
 	resp, _ = client.Do(req)
 	body, _ = io.ReadAll(resp.Body)
 	resp.Body.Close()
@@ -46,10 +68,10 @@ func Login2CAS(username, password string) error {
 	doc, _ = goquery.NewDocumentFromReader(strings.NewReader(string(body)))
 
 	if errMsg := strings.TrimSpace(doc.Find("div#msg.errors").Text()); strings.Contains(errMsg, "您输入的用户名或密码有误") {
-		return fmt.Errorf("登录失败，用户名或密码错误")
+		return nil, fmt.Errorf("登录失败，用户名或密码错误")
 	} else if msg := strings.TrimSpace(doc.Find("#msg.success").Text()); strings.Contains(msg, "登录成功") {
-		return nil
+		return client, nil
 	} else {
-		return fmt.Errorf("登录失败，未知错误")
+		return nil, fmt.Errorf("登录失败，未知错误")
 	}
 }

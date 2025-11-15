@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"GrabSeat/config"
 	"time"
+
+	"github.com/Serendipity565/GrabSeat/config"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

@@ -1,7 +1,7 @@
 package response
 
 import (
-	"GrabSeat/service/garb"
+	"github.com/Serendipity565/GrabSeat/service/garb"
 )
 
 // MFindVacantSeatsResp 模糊查找今天的空座位

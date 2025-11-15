@@ -1,8 +1,9 @@
 package errs
 
 import (
-	"GrabSeat/pkg/errorx"
 	"net/http"
+
+	"github.com/Serendipity565/GrabSeat/pkg/errorx"
 )
 
 const (

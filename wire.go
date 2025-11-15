@@ -3,12 +3,12 @@
 package main
 
 import (
-	"GrabSeat/config"
-	"GrabSeat/controller"
-	"GrabSeat/middleware"
-	"GrabSeat/pkg/ijwt"
-	"GrabSeat/pkg/logger"
-	"GrabSeat/service"
+	"github.com/Serendipity565/GrabSeat/config"
+	"github.com/Serendipity565/GrabSeat/controller"
+	"github.com/Serendipity565/GrabSeat/middleware"
+	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
+	"github.com/Serendipity565/GrabSeat/pkg/logger"
+	"github.com/Serendipity565/GrabSeat/service"
 
 	"github.com/google/wire"
 )
