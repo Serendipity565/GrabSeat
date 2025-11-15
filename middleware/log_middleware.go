@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"GrabSeat/pkg/logger"
 	"time"
+
+	"github.com/Serendipity565/GrabSeat/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

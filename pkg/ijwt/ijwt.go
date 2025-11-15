@@ -1,7 +1,6 @@
 package ijwt
 
 import (
-	"GrabSeat/config"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -10,6 +9,8 @@ import (
 	"errors"
 	"io"
 	"time"
+
+	"github.com/Serendipity565/GrabSeat/config"
 
 	"github.com/golang-jwt/jwt/v5"
 )

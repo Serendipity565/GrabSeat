@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"GrabSeat/middleware"
+	"github.com/Serendipity565/GrabSeat/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"

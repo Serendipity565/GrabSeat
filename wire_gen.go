@@ -7,12 +7,12 @@
 package main
 
 import (
-	"GrabSeat/config"
-	"GrabSeat/controller"
-	"GrabSeat/middleware"
-	"GrabSeat/pkg/ijwt"
-	"GrabSeat/pkg/logger"
-	"GrabSeat/service"
+	"github.com/Serendipity565/GrabSeat/config"
+	"github.com/Serendipity565/GrabSeat/controller"
+	"github.com/Serendipity565/GrabSeat/middleware"
+	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
+	"github.com/Serendipity565/GrabSeat/pkg/logger"
+	"github.com/Serendipity565/GrabSeat/service"
 )
 
 // Injectors from wire.go:
@@ -20,7 +20,8 @@ import (
 func InitApp() *App {
 	jwtConfig := config.NewJWTConfig()
 	jwt := ijwt.NewJWT(jwtConfig)
-	loginController := controller.NewLoginController(jwt)
+	loginService := service.NewLoginService()
+	loginController := controller.NewLoginController(jwt, loginService)
 	garbController := controller.NewGarbHandler()
 	middlewareConfig := config.NewMiddlewareConfig()
 	corsMiddleware := middleware.NewCorsMiddleware(middlewareConfig)

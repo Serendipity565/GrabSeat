@@ -1,12 +1,13 @@
 package ginx
 
 import (
-	"GrabSeat/api/response"
-	"GrabSeat/pkg/errorx"
-	"GrabSeat/pkg/ijwt"
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/Serendipity565/GrabSeat/api/response"
+	"github.com/Serendipity565/GrabSeat/pkg/errorx"
+	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
 
 	"github.com/gin-gonic/gin"
 )

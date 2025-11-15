@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"GrabSeat/pkg/ginx"
-	"GrabSeat/pkg/ijwt"
 	"errors"
 	"strings"
+
+	"github.com/Serendipity565/GrabSeat/pkg/ginx"
+	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
 
 	"github.com/gin-gonic/gin"
 )
