@@ -24,7 +24,7 @@ func NewLoginService() LoginService {
 	return &loginService{}
 }
 
-func (ls *loginService) Login2CAS(username, password string) (*http.Client, error) {
+func (l *loginService) Login2CAS(username, password string) (*http.Client, error) {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{
 		Jar:     jar,

@@ -1,4 +1,4 @@
-package garb
+package service
 
 import (
 	"time"

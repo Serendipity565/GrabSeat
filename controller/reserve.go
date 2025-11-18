@@ -8,8 +8,7 @@ import (
 	"github.com/Serendipity565/GrabSeat/api/response"
 	"github.com/Serendipity565/GrabSeat/pkg/ginx"
 	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
-	"github.com/Serendipity565/GrabSeat/service/garb"
-
+	"github.com/Serendipity565/GrabSeat/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,14 +27,15 @@ func (rc *ReserveController) RegisterReserveRouter(r *gin.RouterGroup, authMiddl
 }
 
 // Reserve 预约座位接口
-// @Summary 预约座位接口
-// @Description 预约5天内座位接口
-// @Tags reserve
-// @Accept  json
-// @Produce  json
+//
+//	@Summary		预约座位接口
+//	@Description	预约5天内座位接口
+//	@Tags			reserve
+//	@Accept			json
+//	@Produce		json
 func (rc *ReserveController) Reserve(c *gin.Context, req request.ReserveReq, uc ijwt.UserClaims) (response.Response, error) {
 	// 预约逻辑
-	bData, err := garb.BeforeDate(req.Data)
+	bData, err := service.BeforeDate(req.Data)
 	if err != nil {
 		return response.Response{
 			Code: http.StatusBadRequest,
