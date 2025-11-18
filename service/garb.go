@@ -1,18 +1,256 @@
-package garb
+package service
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/anaskhan96/soup"
 	"github.com/go-resty/resty/v2"
 )
+
+type GrabberService interface {
+	GetClient(username, password string) *http.Client
+	FindOneVacantSeat() string
+	FindVacantSeats() []Seat
+	MFindVacantSeats(keyword string) []Seat
+	IsInLibrary(name string) *Occupant
+	SeatToName(seat string) []Ts
+	Grab(devId string)
+	GrabSuccess() bool
+	StartFlushClient(username, password string, dur time.Duration)
+}
+
+type clientEntry struct {
+	client *http.Client
+	expire time.Time
+}
+
+type grabberService struct {
+	mu         sync.RWMutex
+	cookiePool map[string]*clientEntry
+	ttl        time.Duration
+}
+
+func NewGrabberService() GrabberService {
+	return &grabberService{
+		cookiePool: make(map[string]*clientEntry),
+		ttl:        25 * time.Minute, // 比 CAS session TTL 略短一些，防止临界时间产生一些问题
+	}
+}
+
+func (g *grabberService) GetClient(username, password string) *http.Client {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (g *grabberService) FindOneVacantSeat() string {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (g *grabberService) FindVacantSeats() []Seat {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (g *grabberService) MFindVacantSeats(keyword string) []Seat {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (g *grabberService) IsInLibrary(name string) *Occupant {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (g *grabberService) SeatToName(seat string) []Ts {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (g *grabberService) Grab(devId string) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (g *grabberService) GrabSuccess() bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (g *grabberService) StartFlushClient(username, password string, dur time.Duration) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (g *grabberService) getClient(username, password string) (*http.Client, error) {
+	// 先用读锁快速检查
+	g.mu.RLock()
+	entry, ok := g.cookiePool[username]
+	if ok && entry != nil && time.Now().Before(entry.expire) && validateClient(entry.client) {
+		c := entry.client
+		g.mu.RUnlock()
+		return c, nil
+	}
+	g.mu.RUnlock()
+
+	// 升级到写锁 double-check
+	g.mu.Lock()
+	defer g.mu.Unlock()
+
+	// double check
+	entry, ok = g.cookiePool[username]
+	if ok && entry != nil && time.Now().Before(entry.expire) && validateClient(entry.client) {
+		return entry.client, nil
+	}
+
+	// 需要创建/刷新
+	newClient, err := getLibraryClient(username, password)
+	if err != nil {
+		return nil, err
+	}
+
+	// 关闭旧 client 的 idle connections
+	if ok && entry != nil && entry.client != nil {
+		if tr, ok := entry.client.Transport.(*http.Transport); ok {
+			tr.CloseIdleConnections()
+		}
+	}
+
+	g.cookiePool[username] = &clientEntry{
+		client: newClient,
+		expire: time.Now().Add(g.ttl),
+	}
+
+	return newClient, nil
+}
+
+// closeAll 用于优雅关闭：关闭所有 client 的空闲连接（不关闭正在使用的连接）
+func (g *grabberService) closeAll() {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	for _, e := range g.cookiePool {
+		if e != nil && e.client != nil {
+			if tr, ok := e.client.Transport.(*http.Transport); ok {
+				tr.CloseIdleConnections()
+			}
+		}
+	}
+}
+
+// getLibraryClient 登入图书馆
+func getLibraryClient(username, password string) (*http.Client, error) {
+	service := "http://kjyy.ccnu.edu.cn/loginall.aspx?page="
+
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, err
+	}
+	client := &http.Client{
+		Jar:       jar,
+		Timeout:   15 * time.Second,
+		Transport: &http.Transport{},
+	}
+
+	// 获取登录页面，读取 lt 和 execution 等隐藏字段
+	loginURL := fmt.Sprintf("https://account.ccnu.edu.cn/cas/login?service=%s", url.QueryEscape(service))
+	resp, err := client.Get(loginURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	lt, ok := doc.Find(`input[name="lt"]`).Attr("value")
+	if !ok {
+		return nil, errors.New("login token lt not found")
+	}
+	exec, _ := doc.Find(`input[name="execution"]`).Attr("value")
+
+	// 提交表单执行登录
+	form := url.Values{}
+	form.Set("username", username)
+	form.Set("password", password)
+	form.Set("lt", lt)
+	form.Set("execution", exec)
+	form.Set("_eventId", "submit")
+	form.Set("submit", "登录")
+
+	req, err := http.NewRequest("POST", loginURL, strings.NewReader(form.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", "Mozilla/5.0")
+	req.Header.Set("Origin", "https://account.ccnu.edu.cn")
+	req.Header.Set("Referer", loginURL)
+
+	resp, err = client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	// 解析返回页面判断是否登录成功
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	doc, err = goquery.NewDocumentFromReader(strings.NewReader(string(body)))
+	if err == nil {
+		errMsg := strings.TrimSpace(doc.Find("div#msg.errors").Text())
+		if strings.Contains(errMsg, "您输入的用户名或密码有误") {
+			return nil, errors.New(errMsg)
+		}
+	}
+
+	// 返回已带 cookie 的 client，调用方可以直接使用 client.Jar.Cookies(...)
+	return client, nil
+}
+
+// 状态验证
+func validateClient(client *http.Client) bool {
+	// 发送一个轻量级请求验证session是否有效
+	testURL := "http://kjyy.ccnu.edu.cn/ClientWeb/pro/ajax/center.aspx?act=get_History_resv&strat=90&StatFlag=New&_=1763436057006"
+	resp, err := client.Get(testURL)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return false
+	}
+
+	// 进一步检查返回体，未登录情况会返回 JSON 提示
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false
+	}
+
+	// 尝试解析为 JSON，检查 msg 字段
+	var m map[string]interface{}
+	_ = json.Unmarshal(body, &m)
+	if msg, ok := m["msg"].(string); ok {
+		if strings.Contains(msg, "未登录") || strings.Contains(msg, "登录超时") || strings.Contains(msg, "session =null") {
+			return false
+		}
+	}
+
+	return true
+}
 
 type Grabber struct {
 	authClient *http.Client

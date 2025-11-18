@@ -2,15 +2,14 @@ package controller
 
 import (
 	"github.com/Serendipity565/GrabSeat/middleware"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 )
 
-// @title CCNU 图书馆预约抢座 API
-// @version 1.0
-// @description CCNU 图书馆预约抢座 API
-// @host localhost:8080
+//	@title			CCNU 图书馆预约抢座 API
+//	@version		1.0
+//	@description	CCNU 图书馆预约抢座 API
+//	@host			localhost:8080
 
 var ProviderSet = wire.NewSet(
 	NewLoginController,
