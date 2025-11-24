@@ -2,15 +2,26 @@ package controller
 
 import (
 	"github.com/Serendipity565/GrabSeat/api/response"
+	"github.com/Serendipity565/GrabSeat/pkg/ginx"
 	"github.com/Serendipity565/GrabSeat/service"
 	"github.com/gin-gonic/gin"
 )
 
 type HealthCheckController struct {
+	hs service.HealthCheckService
 }
 
-func NewHealthCheckController() *HealthCheckController {
-	return &HealthCheckController{}
+func NewHealthCheckController(hs service.HealthCheckService) *HealthCheckController {
+	return &HealthCheckController{
+		hs: hs,
+	}
+}
+
+func (hc *HealthCheckController) RegisterHealthCheckRouter(r *gin.RouterGroup) {
+	c := r.Group("/health")
+	{
+		c.POST("/check", ginx.Wrap(hc.HealthCheck))
+	}
 }
 
 // HealthCheck 健康检查
@@ -23,8 +34,8 @@ func NewHealthCheckController() *HealthCheckController {
 // @Failure		400	{object}	response.Response										"请求参数错误"
 // @Failure		500	{object}	response.Response										"服务器内部错误"
 // @Router			/api/v1/health [get]
-func HealthCheck(c *gin.Context) (response.Response, error) {
-	resp := service.HealthCheckService()
+func (hc *HealthCheckController) HealthCheck(c *gin.Context) (response.Response, error) {
+	resp := hc.hs.HealthCheck()
 
 	return response.Response{
 		Code: 0,

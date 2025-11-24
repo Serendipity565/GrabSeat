@@ -1,32 +1,43 @@
 definitions:
-  garb.Seat:
+  request.FindVacantSeatsReq:
     properties:
-      devId:
+      end_time:
         type: string
-      title:
+      is_tomorrow:
+        type: boolean
+      key_word:
+        description: 可选参数，模糊搜索关键词
         type: string
-      ts:
-        items:
-          $ref: '#/definitions/garb.Ts'
-        type: array
+      start_time:
+        type: string
+    required:
+    - end_time
+    - is_tomorrow
+    - start_time
     type: object
-  garb.Ts:
+  request.GarbReq:
     properties:
-      end:
+      end_time:
         type: string
-      owner:
+      is_tomorrow:
+        type: boolean
+      seat_id:
+        description: 可选参数,指定座位ID,不指定则自动选择
         type: string
-      start:
+      start_time:
         type: string
-      state:
-        type: string
+    required:
+    - end_time
+    - is_tomorrow
+    - start_time
     type: object
   request.IsInLibraryReq:
     properties:
-      username:
+      student_name:
+        description: 学生姓名
         type: string
     required:
-    - username
+    - student_name
     type: object
   request.LoginRequest:
     properties:
@@ -38,47 +49,48 @@ definitions:
     - password
     - username
     type: object
-  request.MFindVacantSeatsReq:
-    properties:
-      end_time:
-        type: string
-      is_tomorrow:
-        type: boolean
-      key_word:
-        type: string
-      start_time:
-        type: string
-    required:
-    - end_time
-    - start_time
-    type: object
-  request.MGarbReq:
-    properties:
-      end_time:
-        type: string
-      is_tomorrow:
-        type: boolean
-      key_word:
-        type: string
-      start_time:
-        type: string
-    required:
-    - end_time
-    - start_time
-    type: object
   request.SeatToNameReq:
     properties:
-      seat_id:
+      is_tomorrow:
+        type: boolean
+      seat_name:
+        description: 座位名称,例如 N1224
         type: string
     required:
-    - seat_id
+    - is_tomorrow
+    - seat_name
     type: object
-  response.MFindVacantSeatsResp:
+  response.HealthCheckResponse:
     properties:
-      seats:
-        items:
-          $ref: '#/definitions/garb.Seat'
-        type: array
+      process:
+        allOf:
+        - $ref: '#/definitions/response.ProcessStats'
+        description: Process 当前进程的运行状态
+      response_ms:
+        description: ResponseMs 响应耗时，单位毫秒
+        type: string
+      status:
+        description: Status 服务状态，例如 "ok"
+        type: string
+      system:
+        allOf:
+        - $ref: '#/definitions/response.SystemStats'
+        description: System 系统资源使用情况
+    type: object
+  response.ProcessStats:
+    properties:
+      cpu_percent:
+        description: CPUPercent 进程 CPU 使用率（%）
+        type: string
+      go_heap_alloc_mb:
+        description: GoHeapAllocMB Go 堆分配的内存（MB）
+        type: string
+      goroutines:
+        description: Goroutines 当前运行的 goroutine 数
+        type: string
+      memory_rss_mb:
+        description: MemoryRSSMB 进程常驻内存（MB）
+        type: string
     type: object
   response.Response:
     properties:
@@ -88,12 +100,51 @@ definitions:
       msg:
         type: string
     type: object
-  response.SeatToNameResp:
+  response.Seat:
     properties:
+      devId:
+        type: string
+      title:
+        type: string
       ts:
         items:
-          $ref: '#/definitions/garb.Ts'
+          $ref: '#/definitions/response.Ts'
         type: array
+    type: object
+  response.SystemStats:
+    properties:
+      cpu_percent:
+        description: CPUPercent CPU 使用率（%）
+        type: string
+      disk_percent:
+        description: DiskPercent 磁盘使用率（%）
+        type: string
+      disk_total:
+        description: DiskTotalGB 磁盘总量（GB）
+        type: string
+      disk_used:
+        description: DiskUsedGB 已使用磁盘（GB）
+        type: string
+      memory_percent:
+        description: MemoryPercent 内存使用率（%）
+        type: string
+      memory_total:
+        description: MemoryTotalMB 内存总量（MB）
+        type: string
+      memory_used:
+        description: MemoryUsedMB 已使用内存（MB）
+        type: string
+    type: object
+  response.Ts:
+    properties:
+      end:
+        type: string
+      owner:
+        type: string
+      start:
+        type: string
+      state:
+        type: string
     type: object
 info:
   contact: {}
@@ -116,14 +167,7 @@ paths:
         "200":
           description: 成功返回 JWT 令牌
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  additionalProperties:
-                    type: string
-                  type: object
-              type: object
+            $ref: '#/definitions/response.Response'
         "400":
           description: 请求参数错误
           schema:
@@ -151,7 +195,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/request.MFindVacantSeatsReq'
+          $ref: '#/definitions/request.FindVacantSeatsReq'
       produces:
       - application/json
       responses:
@@ -162,7 +206,9 @@ paths:
             - $ref: '#/definitions/response.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/response.MFindVacantSeatsResp'
+                  items:
+                    $ref: '#/definitions/response.Seat'
+                  type: array
               type: object
         "400":
           description: 请求参数错误
@@ -173,6 +219,46 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
       summary: 查找空座位接口
+      tags:
+      - garb
+  /api/v1/garb/garb:
+    post:
+      consumes:
+      - application/json
+      description: 抢座接口
+      parameters:
+      - description: Bearer {{JWT}}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 抢座请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.GarbReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功返回抢座结果
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 抢座接口
       tags:
       - garb
   /api/v1/garb/isinlibrary:
@@ -215,46 +301,6 @@ paths:
       summary: 检查目标用户当前是否在图书馆
       tags:
       - garb
-  /api/v1/garb/mgarb:
-    post:
-      consumes:
-      - application/json
-      description: 抢座接口
-      parameters:
-      - description: Bearer {{JWT}}
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: 抢座请求参数
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/request.MGarbReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 成功返回抢座结果
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  type: string
-              type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/response.Response'
-        "500":
-          description: 服务器内部错误
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: 抢座接口
-      tags:
-      - garb
   /api/v1/garb/seatttoname:
     post:
       consumes:
@@ -282,7 +328,9 @@ paths:
             - $ref: '#/definitions/response.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/response.SeatToNameResp'
+                  items:
+                    $ref: '#/definitions/response.Ts'
+                  type: array
               type: object
         "400":
           description: 请求参数错误
@@ -295,25 +343,32 @@ paths:
       summary: 座位号转名字接口
       tags:
       - garb
-  /api/v1/garb/test:
+  /api/v1/health:
     get:
       consumes:
       - application/json
-      description: 测试接口
-      parameters:
-      - description: Bearer {{JWT}}
-        in: header
-        name: Authorization
-        required: true
-        type: string
+      description: 健康检查，返回当前服务占用的资源等信息
       produces:
       - application/json
       responses:
         "200":
-          description: test success
+          description: 成功返回健康检查结果
           schema:
-            type: string
-      summary: 测试接口
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/response.HealthCheckResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 健康检查，返回当前服务占用的资源等信息
       tags:
-      - garb
+      - health
 swagger: "2.0"

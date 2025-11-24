@@ -18,17 +18,20 @@ import (
 // Injectors from wire.go:
 
 func InitApp() *App {
+	healthCheckService := service.NewHealthCheckService()
+	healthCheckController := controller.NewHealthCheckController(healthCheckService)
 	jwtConfig := config.NewJWTConfig()
 	jwt := ijwt.NewJWT(jwtConfig)
 	loginService := service.NewLoginService()
 	loginController := controller.NewLoginController(jwt, loginService)
-	garbController := controller.NewGarbHandler()
+	zapLogger := logger.NewZapLogger()
+	grabberService := service.NewGrabberService(zapLogger)
+	garbController := controller.NewGarbHandler(grabberService)
 	middlewareConfig := config.NewMiddlewareConfig()
 	corsMiddleware := middleware.NewCorsMiddleware(middlewareConfig)
 	authMiddleware := middleware.NewAuthMiddleware(jwt)
-	zapLogger := logger.NewZapLogger()
 	loggerMiddleware := middleware.NewLoggerMiddleware(zapLogger)
-	engine := controller.NewGinEngine(loginController, garbController, corsMiddleware, authMiddleware, loggerMiddleware)
+	engine := controller.NewGinEngine(healthCheckController, loginController, garbController, corsMiddleware, authMiddleware, loggerMiddleware)
 	ticker := service.NewTicker()
 	app := &App{
 		r: engine,

@@ -14,10 +14,12 @@ import (
 var ProviderSet = wire.NewSet(
 	NewLoginController,
 	NewGarbHandler,
+	NewHealthCheckController,
 	NewGinEngine,
 )
 
 func NewGinEngine(
+	hc *HealthCheckController,
 	lc *LoginController,
 	gc *GarbController,
 
@@ -32,6 +34,7 @@ func NewGinEngine(
 	r.Use(corsMiddleware.MiddlewareFunc())
 	r.Use(logMiddleware.MiddlewareFunc())
 
+	hc.RegisterHealthCheckRouter(api)
 	lc.RegisterLoginRouter(api)
 	gc.RegisterGarbRouter(api, authMiddleware.MiddlewareFunc())
 	return r
