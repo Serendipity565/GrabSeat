@@ -54,8 +54,8 @@ func FetchCASUrl(client *http.Client, username, password string) ([]byte, error)
 	if err != nil {
 		return nil, errors.New("CAS登录请求失败: " + err.Error())
 	}
-	bodyBytes, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.New("读取CAS登录响应失败: " + err.Error())
 	}
@@ -96,7 +96,7 @@ func FetchLibraryLoginUrl(client *http.Client, username, password string) ([]byt
 
 	resp, err = client.Do(req)
 	if err != nil {
-		return nil, errors.New("图书馆登入请求失败" + err.Error())
+		return nil, errors.New("图书馆登录请求失败" + err.Error())
 	}
 	defer resp.Body.Close()
 	// 解析返回页面判断是否登录成功
@@ -137,8 +137,8 @@ func FetchSearchUrl(client *http.Client, Area string, year, month, day int, star
 	if err != nil {
 		return nil, errors.New("SearchUrl请求失败: " + err.Error())
 	}
-	bodyBytes, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.New("读取SearchUrl响应失败: " + err.Error())
 	}
@@ -217,10 +217,8 @@ func FetchPersonUrl(client *http.Client) ([]byte, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New("PersonUrl请求状态码异常: " + resp.Status)
 	}
-
 	// 进一步检查返回体，未登录情况会返回 JSON 提示
 	bodyBytes, err := io.ReadAll(resp.Body)
-	defer resp.Body.Close()
 	if err != nil {
 		return nil, errors.New("读取PersonUrl响应失败: " + err.Error())
 	}

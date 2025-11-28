@@ -42,11 +42,20 @@ type grabberService struct {
 }
 
 func NewGrabberService(log logger.Logger) GrabberService {
-	return &grabberService{
+	gs := &grabberService{
 		cookiePool: make(map[string]*clientEntry),
 		ttl:        25 * time.Minute, // 比 CAS session TTL 略短一些，防止临界时间产生一些问题
 		log:        log,
 	}
+	go func() {
+		ticker := time.NewTicker(60 * time.Minute)
+		defer ticker.Stop()
+		for {
+			<-ticker.C
+			gs.CleanupExpired()
+		}
+	}()
+	return gs
 }
 
 // FindVacantSeats 寻找空闲座位
@@ -209,24 +218,20 @@ func (g *grabberService) GetClient(username, password string) (*http.Client, err
 	// 先用读锁快速检查
 	g.mu.RLock()
 	entry, ok := g.cookiePool[username]
+	g.mu.RUnlock()
 	if ok && entry != nil && time.Now().Before(entry.expire) {
 		validate, _ := g.validateClient(entry.client)
 		if validate {
-			c := entry.client
-			g.mu.RUnlock()
-			return c, nil
+			return entry.client, nil
 		} else {
 			return nil, errs.UnauthorizedError(errors.New("cookie 已失效，请重新登录"))
 		}
 	}
-	g.mu.RUnlock()
 
 	// 升级到写锁 double-check
 	g.mu.Lock()
-	defer g.mu.Unlock()
-
-	// double check
 	entry, ok = g.cookiePool[username]
+	g.mu.Unlock()
 	if ok && entry != nil && time.Now().Before(entry.expire) {
 		validate, _ := g.validateClient(entry.client)
 		if validate {
@@ -257,21 +262,28 @@ func (g *grabberService) GetClient(username, password string) (*http.Client, err
 	return newClient, nil
 }
 
-// CloseAll 用于优雅关闭：关闭所有 client 的空闲连接（不关闭正在使用的连接）
-// TODO : 在程序退出时调用
-func (g *grabberService) CloseAll() {
+// CleanupExpired 用于优雅关闭：关闭所有 client 的空闲连接（不关闭正在使用的连接）
+func (g *grabberService) CleanupExpired() {
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	for _, e := range g.cookiePool {
-		if e != nil && e.client != nil {
-			if tr, ok := e.client.Transport.(*http.Transport); ok {
-				tr.CloseIdleConnections()
+	now := time.Now()
+	for k, e := range g.cookiePool {
+		if e == nil {
+			delete(g.cookiePool, k)
+			continue
+		}
+		if e.expire.Before(now) {
+			if e.client != nil {
+				if tr, ok := e.client.Transport.(*http.Transport); ok {
+					tr.CloseIdleConnections()
+				}
 			}
+			delete(g.cookiePool, k)
 		}
 	}
 }
 
-// GetLibraryClient 登入图书馆
+// GetLibraryClient 登录图书馆
 func (g *grabberService) getLibraryClient(username, password string) (*http.Client, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {

@@ -24,7 +24,7 @@ var (
 		return errorx.New(http.StatusUnauthorized, userIdOrPasswordErrorCode, "账号或者密码错误!", err)
 	}
 	UnauthorizedError = func(err error) error {
-		return errorx.New(http.StatusUnauthorized, unauthorizedErrorCode, "Authorization错误，请重新登入", err)
+		return errorx.New(http.StatusUnauthorized, unauthorizedErrorCode, "Authorization错误，请重新登录", err)
 	}
 )
 
