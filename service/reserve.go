@@ -1,4 +1,4 @@
-package garb
+package service
 
 import (
 	"time"
@@ -23,7 +23,7 @@ func BeforeDate(date string) (time.Time, error) {
 // Reserve 预约明天座位
 // 采用 goroutine + kafka 的方式进行预约
 // 先往 sleep 一定时间，然后往 kafka 发送预约请求
-func (g *Grabber) Reserve(DevId string, delay time.Duration) {
+func Reserve(DevId string, delay time.Duration) {
 	go func() {
 		time.Sleep(delay)
 		// 预约座位

@@ -7,25 +7,41 @@ import (
 )
 
 const (
-	UserIdOrPasswordErrorCode = iota + 40001
-	UnauthorizedErrorCode
+	userIdOrPasswordErrorCode = iota + 40001
+	unauthorizedErrorCode
 )
 
 const (
-	InternalServerErrorCode = iota + 50001
+	internalServerErrorCode = iota + 50001
+	crawlerServerErrorCode
+	grabSeatErrorCode
+	getHistoryErrorCode
+	createClientErrorCode
 )
 
 var (
 	UserIdOrPasswordError = func(err error) error {
-		return errorx.New(http.StatusUnauthorized, UserIdOrPasswordErrorCode, "账号或者密码错误!", err)
+		return errorx.New(http.StatusUnauthorized, userIdOrPasswordErrorCode, "账号或者密码错误!", err)
 	}
 	UnauthorizedError = func(err error) error {
-		return errorx.New(http.StatusUnauthorized, UnauthorizedErrorCode, "Authorization错误", err)
+		return errorx.New(http.StatusUnauthorized, unauthorizedErrorCode, "Authorization错误，请重新登录", err)
 	}
 )
 
 var (
 	InternalServerError = func(err error) error {
-		return errorx.New(http.StatusInternalServerError, InternalServerErrorCode, "服务器内部错误", err)
+		return errorx.New(http.StatusInternalServerError, internalServerErrorCode, "服务器内部错误", err)
+	}
+	CrawlerServerError = func(err error) error {
+		return errorx.New(http.StatusInternalServerError, crawlerServerErrorCode, "爬虫服务器错误", err)
+	}
+	GrabSeatError = func(err error) error {
+		return errorx.New(http.StatusInternalServerError, grabSeatErrorCode, "抢座失败，请稍后重试", err)
+	}
+	GetHistoryError = func(err error) error {
+		return errorx.New(http.StatusInternalServerError, getHistoryErrorCode, "获取历史记录失败", err)
+	}
+	CreateClientError = func(err error) error {
+		return errorx.New(http.StatusInternalServerError, createClientErrorCode, "创建HTTP客户端失败", err)
 	}
 )

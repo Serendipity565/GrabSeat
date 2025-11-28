@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+// @title			CCNU 图书馆预约抢座 API
+// @version		1.0
+// @description	CCNU 图书馆预约抢座 API
+// @host			localhost:8080
 func main() {
 	initViper()
 	app := InitApp()

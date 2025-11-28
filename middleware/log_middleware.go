@@ -47,6 +47,5 @@ func (lm *LoggerMiddleware) MiddlewareFunc() gin.HandlerFunc {
 				zap.Duration("latency", cost),
 			)
 		}
-
 	}
 }

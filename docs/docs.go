@@ -43,22 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "成功返回 JWT 令牌",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
@@ -103,7 +88,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.MFindVacantSeatsReq"
+                            "$ref": "#/definitions/request.FindVacantSeatsReq"
                         }
                     }
                 ],
@@ -119,7 +104,75 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/response.MFindVacantSeatsResp"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.Seat"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/garb/garb": {
+            "post": {
+                "description": "抢座接口",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "garb"
+                ],
+                "summary": "抢座接口",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer {{JWT}}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "抢座请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GarbReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功返回抢座结果",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -206,72 +259,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/garb/mgarb": {
-            "post": {
-                "description": "抢座接口",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "garb"
-                ],
-                "summary": "抢座接口",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer {{JWT}}",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "抢座请求参数",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.MGarbReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "成功返回抢座结果",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "服务器内部错误",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/garb/seatttoname": {
+        "/api/v1/garb/seattoname": {
             "post": {
                 "description": "座位号转名字接口",
                 "consumes": [
@@ -314,7 +302,10 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/response.SeatToNameResp"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.Ts"
+                                            }
                                         }
                                     }
                                 }
@@ -336,9 +327,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/garb/test": {
+        "/api/v1/health/check": {
             "get": {
-                "description": "测试接口",
+                "description": "健康检查，返回当前服务占用的资源等信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -346,23 +337,38 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "garb"
+                    "health"
                 ],
-                "summary": "测试接口",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer {{JWT}}",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
+                "summary": "健康检查，返回当前服务占用的资源等信息",
                 "responses": {
                     "200": {
-                        "description": "test success",
+                        "description": "成功返回健康检查结果",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.HealthCheckResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -370,36 +376,48 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "garb.Seat": {
+        "request.FindVacantSeatsReq": {
             "type": "object",
+            "required": [
+                "end_time",
+                "is_tomorrow",
+                "start_time"
+            ],
             "properties": {
-                "devId": {
+                "end_time": {
                     "type": "string"
                 },
-                "title": {
+                "is_tomorrow": {
+                    "type": "boolean"
+                },
+                "key_word": {
+                    "description": "可选参数，模糊搜索关键词",
                     "type": "string"
                 },
-                "ts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/garb.Ts"
-                    }
+                "start_time": {
+                    "type": "string"
                 }
             }
         },
-        "garb.Ts": {
+        "request.GarbReq": {
             "type": "object",
+            "required": [
+                "end_time",
+                "is_tomorrow",
+                "start_time"
+            ],
             "properties": {
-                "end": {
+                "end_time": {
                     "type": "string"
                 },
-                "owner": {
+                "is_tomorrow": {
+                    "type": "boolean"
+                },
+                "seat_id": {
+                    "description": "可选参数,指定座位ID,不指定则自动选择",
                     "type": "string"
                 },
-                "start": {
-                    "type": "string"
-                },
-                "state": {
+                "start_time": {
                     "type": "string"
                 }
             }
@@ -407,10 +425,11 @@ const docTemplate = `{
         "request.IsInLibraryReq": {
             "type": "object",
             "required": [
-                "username"
+                "student_name"
             ],
             "properties": {
-                "username": {
+                "student_name": {
+                    "description": "学生姓名",
                     "type": "string"
                 }
             }
@@ -430,67 +449,69 @@ const docTemplate = `{
                 }
             }
         },
-        "request.MFindVacantSeatsReq": {
-            "type": "object",
-            "required": [
-                "end_time",
-                "start_time"
-            ],
-            "properties": {
-                "end_time": {
-                    "type": "string"
-                },
-                "is_tomorrow": {
-                    "type": "boolean"
-                },
-                "key_word": {
-                    "type": "string"
-                },
-                "start_time": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.MGarbReq": {
-            "type": "object",
-            "required": [
-                "end_time",
-                "start_time"
-            ],
-            "properties": {
-                "end_time": {
-                    "type": "string"
-                },
-                "is_tomorrow": {
-                    "type": "boolean"
-                },
-                "key_word": {
-                    "type": "string"
-                },
-                "start_time": {
-                    "type": "string"
-                }
-            }
-        },
         "request.SeatToNameReq": {
             "type": "object",
             "required": [
-                "seat_id"
+                "is_tomorrow",
+                "seat_name"
             ],
             "properties": {
-                "seat_id": {
+                "is_tomorrow": {
+                    "type": "boolean"
+                },
+                "seat_name": {
+                    "description": "座位名称,例如 N1224",
                     "type": "string"
                 }
             }
         },
-        "response.MFindVacantSeatsResp": {
+        "response.HealthCheckResponse": {
             "type": "object",
             "properties": {
-                "seats": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/garb.Seat"
-                    }
+                "process": {
+                    "description": "Process 当前进程的运行状态",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/response.ProcessStats"
+                        }
+                    ]
+                },
+                "response_ms": {
+                    "description": "ResponseMs 响应耗时，单位毫秒",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "Status 服务状态，例如 \"ok\"",
+                    "type": "string"
+                },
+                "system": {
+                    "description": "System 系统资源使用情况",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/response.SystemStats"
+                        }
+                    ]
+                }
+            }
+        },
+        "response.ProcessStats": {
+            "type": "object",
+            "properties": {
+                "cpu_percent": {
+                    "description": "CPUPercent 进程 CPU 使用率（%）",
+                    "type": "string"
+                },
+                "go_heap_alloc_mb": {
+                    "description": "GoHeapAllocMB Go 堆分配的内存（MB）",
+                    "type": "string"
+                },
+                "goroutines": {
+                    "description": "Goroutines 当前运行的 goroutine 数",
+                    "type": "string"
+                },
+                "memory_rss_mb": {
+                    "description": "MemoryRSSMB 进程常驻内存（MB）",
+                    "type": "string"
                 }
             }
         },
@@ -506,14 +527,70 @@ const docTemplate = `{
                 }
             }
         },
-        "response.SeatToNameResp": {
+        "response.Seat": {
             "type": "object",
             "properties": {
+                "devId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
                 "ts": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/garb.Ts"
+                        "$ref": "#/definitions/response.Ts"
                     }
+                }
+            }
+        },
+        "response.SystemStats": {
+            "type": "object",
+            "properties": {
+                "cpu_percent": {
+                    "description": "CPUPercent CPU 使用率（%）",
+                    "type": "string"
+                },
+                "disk_percent": {
+                    "description": "DiskPercent 磁盘使用率（%）",
+                    "type": "string"
+                },
+                "disk_total": {
+                    "description": "DiskTotalGB 磁盘总量（GB）",
+                    "type": "string"
+                },
+                "disk_used": {
+                    "description": "DiskUsedGB 已使用磁盘（GB）",
+                    "type": "string"
+                },
+                "memory_percent": {
+                    "description": "MemoryPercent 内存使用率（%）",
+                    "type": "string"
+                },
+                "memory_total": {
+                    "description": "MemoryTotalMB 内存总量（MB）",
+                    "type": "string"
+                },
+                "memory_used": {
+                    "description": "MemoryUsedMB 已使用内存（MB）",
+                    "type": "string"
+                }
+            }
+        },
+        "response.Ts": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
                 }
             }
         }
@@ -522,12 +599,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "CCNU 图书馆预约抢座 API",
+	Description:      "CCNU 图书馆预约抢座 API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
