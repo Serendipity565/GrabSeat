@@ -254,10 +254,12 @@ func (g *grabberService) GetClient(username, password string) (*http.Client, err
 		}
 	}
 
+	g.mu.Lock()
 	g.cookiePool[username] = &clientEntry{
 		client: newClient,
 		expire: time.Now().Add(g.ttl),
 	}
+	g.mu.Unlock()
 
 	return newClient, nil
 }
