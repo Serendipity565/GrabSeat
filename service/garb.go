@@ -224,7 +224,8 @@ func (g *grabberService) GetClient(username, password string) (*http.Client, err
 		if validate {
 			return entry.client, nil
 		} else {
-			return nil, errs.UnauthorizedError(errors.New("cookie 已失效，请重新登录"))
+			// client 中的 cookie 无效，跳转到刷新流程
+			goto refresh
 		}
 	}
 
@@ -237,14 +238,17 @@ func (g *grabberService) GetClient(username, password string) (*http.Client, err
 		if validate {
 			return entry.client, nil
 		} else {
-			return nil, errs.UnauthorizedError(errors.New("cookie 已失效，请重新登录"))
+			// client 中的 cookie 无效，跳转到刷新流程
+			goto refresh
 		}
 	}
 
+refresh:
 	// 需要创建或刷新
 	newClient, err := g.getLibraryClient(username, password)
 	if err != nil {
-		return nil, errs.CreateClientError(err)
+		// 这里的错误已经是封装好的错误类型，直接返回
+		return nil, err
 	}
 
 	// 关闭旧 client 的 idle connections
