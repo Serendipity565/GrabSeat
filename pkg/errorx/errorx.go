@@ -9,32 +9,31 @@ import (
 
 // CustomError 自定义错误类型
 type CustomError struct {
-	HttpCode int    // http错误
-	Code     int    // 具体错误码
-	Msg      string // 暴露给前端的错误信息
-	//内部日志
-	Cause    error  // 具体错误原因
-	File     string // 出错的文件名
-	Line     int    // 出错的行号
-	Function string // 出错的函数名
+	HttpCode int    `json:"http_code"` // http错误
+	Code     int    `json:"code"`      // 具体错误码
+	Msg      string `json:"message"`   // 暴露给前端的错误信息
+	Err      error  `json:"-"`         // 具体错误原因（内部，不暴露）
+	File     string `json:"-"`         // 出错的文件名（内部，不暴露）
+	Line     int    `json:"-"`         // 出错的行号（内部，不暴露）
+	Function string `json:"-"`         // 出错的函数名（内部，不暴露）
 }
 
 func (e *CustomError) Error() string {
-	if e.Cause != nil {
-		return fmt.Sprintf("[%d] %s (at %s:%d in %s): %v", e.Code, e.Msg, e.File, e.Line, e.Function, e.Cause)
+	if e.Err != nil {
+		return fmt.Sprintf("[%d] %s (at %s:%d in %s): %v", e.Code, e.Msg, e.File, e.Line, e.Function, e.Err)
 	}
 	return fmt.Sprintf("[%d] %s (at %s:%d in %s)", e.Code, e.Msg, e.File, e.Line, e.Function)
 }
 
 // New 创建新的 CustomError
-func New(httpCode int, code int, message string, cause error) error {
+func New(httpCode int, code int, message string, err error) error {
 	// 获取调用栈信息
 	file, line, function := getCallerInfo(3)
 	return &CustomError{
 		HttpCode: httpCode,
 		Code:     code,
 		Msg:      message,
-		Cause:    cause,
+		Err:      err,
 		File:     file,
 		Line:     line,
 		Function: function,
@@ -72,7 +71,7 @@ func ToCustomError(err error) *CustomError {
 		HttpCode: http.StatusInternalServerError,
 		Code:     50001, // 通用内部错误码
 		Msg:      "服务器内部错误",
-		Cause:    err,
+		Err:      err,
 		File:     file,
 		Line:     line,
 		Function: function,

@@ -14,10 +14,10 @@ type Ts struct { // 预约信息
 }
 
 type Occupant struct {
-	Title string
-	Name  string
-	Start string
-	End   string
+	Title string `json:"title"`
+	Name  string `json:"name"`
+	Start string `json:"start"`
+	End   string `json:"end"`
 }
 
 type SearchResp struct {

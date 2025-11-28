@@ -3,20 +3,21 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/Serendipity565/GrabSeat/api/response"
+	"github.com/Serendipity565/GrabSeat/errs"
 	"github.com/Serendipity565/GrabSeat/pkg/logger"
-	"go.uber.org/zap"
+	"github.com/Serendipity565/GrabSeat/service/crawler"
+)
+
+var (
+	Areas = []string{"101699191", "101699189", "101699187", "101699179"}
 )
 
 type GrabberService interface {
@@ -52,57 +53,19 @@ func NewGrabberService(log logger.Logger) GrabberService {
 // keyword 模糊匹配关键字，为空则返回所有空闲座位
 func (g *grabberService) FindVacantSeats(client *http.Client, startTime, endTime, keyWord string, isTomorrow bool) ([]response.Seat, error) {
 	vacantSeats := make([]response.Seat, 0)
+	dateTime := time.Now()
+	if isTomorrow {
+		dateTime = dateTime.Add(time.Hour * 24)
+	}
+	year, month, day := dateTime.Date()
 	for _, area := range Areas {
-		dateTime := time.Now()
-		if isTomorrow {
-			dateTime = dateTime.Add(time.Hour * 24)
-		}
-		year, month, day := dateTime.Date()
-
-		params := url.Values{}
-		params.Set("byType", "devcls")
-		params.Set("classkind", "8")
-		params.Set("display", "fp")
-		params.Set("md", "d")
-		params.Set("room_id", area)
-		params.Set("purpose", "")
-		params.Set("selectOpenAty", "")
-		params.Set("cld_name", "default")
-		params.Set("date", fmt.Sprintf("%d-%02d-%02d", year, month, day))
-		params.Set("fr_start", startTime)
-		params.Set("fr_end", endTime)
-		params.Set("act", "get_rsv_sta")
-		params.Set("_", "16698463729090")
-		requestURL := SearchUrl + "?" + params.Encode()
-		req, err := http.NewRequest("GET", requestURL, nil)
+		bodyBytes, err := crawler.FetchSearchUrl(client, area, year, int(month), day, "8:00", "22:00")
 		if err != nil {
-			g.log.Error("create HTTP request error",
-				zap.String("method", "GET"),
-				zap.String("url", requestURL),
-				zap.Error(err),
-			)
-			return nil, err
-		}
-		req.Header.Set("Accept", "application/json, text/javascript, */*; q=0.01")
-		req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
-		req.Header.Set("Cache-Control", "no-cache")
-		req.Header.Set("Pragma", "no-cache")
-		req.Header.Set("Proxy-Connection", "keep-alive")
-		req.Header.Set("Referer", "http://kjyy.ccnu.edu.cn/clientweb/xcus/ic2/Default.aspx")
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36")
-		req.Header.Set("X-Requested-With", "XMLHttpRequest")
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		bodyBytes, err := io.ReadAll(resp.Body)
-		_ = resp.Body.Close()
-		if err != nil {
-			return nil, err
+			return nil, errs.CrawlerServerError(err)
 		}
 		var bodyData response.SearchResp
-		if err := json.Unmarshal(bodyBytes, &bodyData); err != nil {
-			return nil, err
+		if err = json.Unmarshal(bodyBytes, &bodyData); err != nil {
+			return nil, errs.InternalServerError(err)
 		}
 
 		keyWord = strings.ToUpper(keyWord)
@@ -135,54 +98,16 @@ func (g *grabberService) FindVacantSeats(client *http.Client, startTime, endTime
 
 // IsInLibrary 当前是否在图书馆
 func (g *grabberService) IsInLibrary(client *http.Client, name string) (*response.Occupant, error) {
+	dateTime := time.Now()
+	year, month, day := dateTime.Date()
 	for _, area := range Areas {
-		dateTime := time.Now()
-		year, month, day := dateTime.Date()
-
-		params := url.Values{}
-		params.Set("byType", "devcls")
-		params.Set("classkind", "8")
-		params.Set("display", "fp")
-		params.Set("md", "d")
-		params.Set("room_id", area)
-		params.Set("purpose", "")
-		params.Set("selectOpenAty", "")
-		params.Set("cld_name", "default")
-		params.Set("date", fmt.Sprintf("%d-%02d-%02d", year, month, day))
-		params.Set("fr_start", "8:00")
-		params.Set("fr_end", "22:00")
-		params.Set("act", "get_rsv_sta")
-		params.Set("_", "1763566369394")
-		requestURL := SearchUrl + "?" + params.Encode()
-		req, err := http.NewRequest("GET", requestURL, nil)
+		bodyBytes, err := crawler.FetchSearchUrl(client, area, year, int(month), day, "8:00", "22:00")
 		if err != nil {
-			g.log.Error("create HTTP request error",
-				zap.String("method", "GET"),
-				zap.String("url", requestURL),
-				zap.Error(err),
-			)
-			return nil, err
-		}
-		req.Header.Set("Accept", "application/json, text/javascript, */*; q=0.01")
-		req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
-		req.Header.Set("Cache-Control", "no-cache")
-		req.Header.Set("Pragma", "no-cache")
-		req.Header.Set("Proxy-Connection", "keep-alive")
-		req.Header.Set("Referer", "http://kjyy.ccnu.edu.cn/clientweb/xcus/ic2/Default.aspx")
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36")
-		req.Header.Set("X-Requested-With", "XMLHttpRequest")
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		bodyBytes, err := io.ReadAll(resp.Body)
-		_ = resp.Body.Close()
-		if err != nil {
-			return nil, err
+			return nil, errs.CrawlerServerError(err)
 		}
 		var bodyData response.SearchResp
-		if err := json.Unmarshal(bodyBytes, &bodyData); err != nil {
-			return nil, err
+		if err = json.Unmarshal(bodyBytes, &bodyData); err != nil {
+			return nil, errs.InternalServerError(err)
 		}
 
 		for _, locationInfo := range bodyData.Data {
@@ -198,62 +123,25 @@ func (g *grabberService) IsInLibrary(client *http.Client, name string) (*respons
 			}
 		}
 	}
-	return nil, errors.New("未找到对应座位的预约信息")
+	// 找不到返回为空
+	return nil, nil
 }
 
 // SeatToName 座位号转姓名: 查看该座位的预约信息，可以看到预约人是谁
 func (g *grabberService) SeatToName(client *http.Client, seatName string, isTomorrow bool) ([]response.Ts, error) {
+	dateTime := time.Now()
+	if isTomorrow {
+		dateTime = dateTime.Add(time.Hour * 24)
+	}
+	year, month, day := dateTime.Date()
 	for _, area := range Areas {
-		dateTime := time.Now()
-		if isTomorrow {
-			dateTime = dateTime.Add(time.Hour * 24)
-		}
-		year, month, day := dateTime.Date()
-
-		params := url.Values{}
-		params.Set("byType", "devcls")
-		params.Set("classkind", "8")
-		params.Set("display", "fp")
-		params.Set("md", "d")
-		params.Set("room_id", area)
-		params.Set("purpose", "")
-		params.Set("selectOpenAty", "")
-		params.Set("cld_name", "default")
-		params.Set("date", fmt.Sprintf("%d-%02d-%02d", year, month, day))
-		params.Set("fr_start", "8:00")
-		params.Set("fr_end", "22:00")
-		params.Set("act", "get_rsv_sta")
-		params.Set("_", "1763566369394")
-		requestURL := SearchUrl + "?" + params.Encode()
-		req, err := http.NewRequest("GET", requestURL, nil)
+		bodyBytes, err := crawler.FetchSearchUrl(client, area, year, int(month), day, "8:00", "22:00")
 		if err != nil {
-			g.log.Error("create HTTP request error",
-				zap.String("method", "GET"),
-				zap.String("url", requestURL),
-				zap.Error(err),
-			)
-			return nil, err
-		}
-		req.Header.Set("Accept", "application/json, text/javascript, */*; q=0.01")
-		req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
-		req.Header.Set("Cache-Control", "no-cache")
-		req.Header.Set("Pragma", "no-cache")
-		req.Header.Set("Proxy-Connection", "keep-alive")
-		req.Header.Set("Referer", "http://kjyy.ccnu.edu.cn/clientweb/xcus/ic2/Default.aspx")
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36")
-		req.Header.Set("X-Requested-With", "XMLHttpRequest")
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		bodyBytes, err := io.ReadAll(resp.Body)
-		_ = resp.Body.Close()
-		if err != nil {
-			return nil, err
+			return nil, errs.CrawlerServerError(err)
 		}
 		var bodyData response.SearchResp
-		if err := json.Unmarshal(bodyBytes, &bodyData); err != nil {
-			return nil, err
+		if err = json.Unmarshal(bodyBytes, &bodyData); err != nil {
+			return nil, errs.InternalServerError(err)
 		}
 		for _, locationInfo := range bodyData.Data {
 			if locationInfo.Title == seatName {
@@ -261,7 +149,7 @@ func (g *grabberService) SeatToName(client *http.Client, seatName string, isTomo
 			}
 		}
 	}
-	return nil, errors.New("未找到对应座位的预约信息")
+	return nil, nil
 }
 
 // Grab 预约座位
@@ -272,115 +160,33 @@ func (g *grabberService) Grab(client *http.Client, seatID, startTime, endTime st
 	}
 	year, month, day := dateTime.Date()
 
-	params := url.Values{}
-	params.Set("dialogid", "")
-	params.Set("dev_id", seatID)
-	params.Set("lab_id", "")
-	params.Set("kind_id", "")
-	params.Set("room_id", "")
-	params.Set("type", "dev")
-	params.Set("prop", "")
-	params.Set("test_id", "")
-	params.Set("term", "")
-	params.Set("Vnumber", "")
-	params.Set("classkind", "")
-	params.Set("test_name", "")
-	params.Set("start", fmt.Sprintf("%d-%02d-%02d %s", year, month, day, startTime))
-	params.Set("end", fmt.Sprintf("%d-%02d-%02d %s", year, month, day, endTime))
-	params.Set("start_time", "1000")
-	params.Set("end_time", "2200")
-	params.Set("up_file", "")
-	params.Set("memo", "")
-	params.Set("act", "set_resv")
-	params.Set("_", "170481145010")
-	requestURL := GrabUrl + "?" + params.Encode()
-	req, err := http.NewRequest("POST", requestURL, nil)
+	bodyBytes, err := crawler.FetchGrabUrl(client, seatID, year, int(month), day, startTime, endTime)
 	if err != nil {
-		g.log.Error("create HTTP request error",
-			zap.String("method", "POST"),
-			zap.String("url", requestURL),
-			zap.Error(err),
-		)
-		return false, err
-
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Accept", "application/json, text/javascript, */*; q=0.01")
-	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("Referer", "http://kjyy.ccnu.edu.cn/clientweb/xcus/ic2/Default.aspx")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0")
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return false, err
+		return false, errs.CrawlerServerError(err)
 	}
 	var respMap map[string]interface{}
-	_ = json.Unmarshal(body, &respMap)
+	err = json.Unmarshal(bodyBytes, &respMap)
+	if err != nil {
+		return false, errs.InternalServerError(err)
+	}
 	// success {"ret":1,"act":"set_resv","msg":"操作成功！","data":null,"ext":null}
 	if msg, ok := respMap["msg"].(string); ok && strings.Contains(msg, "操作成功") {
 		return true, nil
 	} else {
-		return false, fmt.Errorf("预约失败: %s", msg)
+		return false, errs.GrabSeatError(errors.New(msg))
 	}
 }
 
 // GrabSuccess 预约是否成功
 func (g *grabberService) GrabSuccess(client *http.Client) (bool, error) {
-	params := url.Values{}
-	params.Set("act", "get_History_resv")
-	params.Set("strat", "90")
-	params.Set("StatFlag", "New")
-	params.Set("_", "1704815632495")
-	requestURL := PersonUrl + "?" + params.Encode()
-	req, err := http.NewRequest("GET", requestURL, nil)
+	bodyBytes, err := crawler.FetchPersonUrl(client)
 	if err != nil {
-		g.log.Error("create HTTP request error",
-			zap.String("method", "GET"),
-			zap.String("url", requestURL),
-			zap.Error(err),
-		)
-		return false, err
-	}
-	req.Header.Set("Accept", "application/json, text/javascript, */*; q=0.01")
-	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Set("Pragma", "no-cache")
-	req.Header.Set("Referer", "http://kjyy.ccnu.edu.cn/clientweb/xcus/ic2/Default.aspx")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36")
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
-	resp, err := client.Do(req)
-	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return false, err
+		return false, errs.CrawlerServerError(err)
 	}
 
-	// 进一步检查返回体，未登录情况会返回 JSON 提示
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return false, err
-	}
-
-	var response map[string]interface{}
-	if err := json.Unmarshal(body, &response); err != nil {
-		log.Fatalf("Failed to unmarshal response: %v", err)
-	}
-
-	msg, ok := response["msg"].(string)
-	if !ok {
-
+	var respMap map[string]interface{}
+	if err = json.Unmarshal(bodyBytes, &respMap); err != nil {
+		return false, errs.InternalServerError(err)
 	}
 
 	// success {
@@ -391,13 +197,11 @@ func (g *grabberService) GrabSuccess(client *http.Client) (bool, error) {
 	//    "ext": null
 	//}
 	// failure {"ret":1,"act":"get_History_resv","msg":"<tbody><tr><td colspan='6' class='text-center'>没有数据</td></tr></tbody>","data":null,"ext":null}
-	if msg == "" || strings.Contains(msg, "没有数据") {
-		return false, nil
-	}
-	if strings.Contains(msg, "<tbody") {
+	if msg, ok := respMap["msg"].(string); ok && strings.Contains(msg, "<tbody") {
 		return true, nil
+	} else {
+		return false, errs.GetHistoryError(errors.New(msg))
 	}
-	return false, fmt.Errorf("unexpected response: %s", msg)
 }
 
 // GetClient 获取或创建带有有效 cookie 的 http.Client
@@ -411,6 +215,8 @@ func (g *grabberService) GetClient(username, password string) (*http.Client, err
 			c := entry.client
 			g.mu.RUnlock()
 			return c, nil
+		} else {
+			return nil, errs.UnauthorizedError(errors.New("cookie 已失效，请重新登录"))
 		}
 	}
 	g.mu.RUnlock()
@@ -421,18 +227,19 @@ func (g *grabberService) GetClient(username, password string) (*http.Client, err
 
 	// double check
 	entry, ok = g.cookiePool[username]
-	//validate, _ = g.validateClient(entry.client)
 	if ok && entry != nil && time.Now().Before(entry.expire) {
 		validate, _ := g.validateClient(entry.client)
 		if validate {
 			return entry.client, nil
+		} else {
+			return nil, errs.UnauthorizedError(errors.New("cookie 已失效，请重新登录"))
 		}
 	}
 
-	// 需要创建/刷新
-	newClient, err := g.GetLibraryClient(username, password)
+	// 需要创建或刷新
+	newClient, err := g.getLibraryClient(username, password)
 	if err != nil {
-		return nil, err
+		return nil, errs.CreateClientError(err)
 	}
 
 	// 关闭旧 client 的 idle connections
@@ -465,12 +272,10 @@ func (g *grabberService) CloseAll() {
 }
 
 // GetLibraryClient 登入图书馆
-func (g *grabberService) GetLibraryClient(username, password string) (*http.Client, error) {
-	service := "http://kjyy.ccnu.edu.cn/loginall.aspx?page="
-
+func (g *grabberService) getLibraryClient(username, password string) (*http.Client, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		return nil, err
+		return nil, errs.InternalServerError(err)
 	}
 	client := &http.Client{
 		Jar:       jar,
@@ -478,110 +283,38 @@ func (g *grabberService) GetLibraryClient(username, password string) (*http.Clie
 		Transport: &http.Transport{},
 	}
 
-	// 获取登录页面，读取 lt 和 execution 等隐藏字段
-	loginURL := fmt.Sprintf("https://account.ccnu.edu.cn/cas/login?service=%s", url.QueryEscape(service))
-	resp, err := client.Get(loginURL)
+	bodyBytes, err := crawler.FetchLibraryLoginUrl(client, username, password)
 	if err != nil {
-		return nil, err
+		return nil, errs.CrawlerServerError(err)
 	}
-	defer resp.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(bodyBytes)))
 	if err != nil {
-		return nil, err
+		return nil, errs.InternalServerError(err)
 	}
-	lt, ok := doc.Find(`input[name="lt"]`).Attr("value")
-	if !ok {
-		return nil, errors.New("login token lt not found")
+	errMsg := strings.TrimSpace(doc.Find("div#msg.errors").Text())
+	if strings.Contains(errMsg, "您输入的用户名或密码有误") {
+		return nil, errs.UserIdOrPasswordError(errors.New(errMsg))
 	}
-	exec, _ := doc.Find(`input[name="execution"]`).Attr("value")
-
-	// 提交表单执行登录
-	form := url.Values{}
-	form.Set("username", username)
-	form.Set("password", password)
-	form.Set("lt", lt)
-	form.Set("execution", exec)
-	form.Set("_eventId", "submit")
-	form.Set("submit", "登录")
-
-	req, err := http.NewRequest("POST", loginURL, strings.NewReader(form.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("User-Agent", "Mozilla/5.0")
-	req.Header.Set("Origin", "https://account.ccnu.edu.cn")
-	req.Header.Set("Referer", loginURL)
-
-	resp, err = client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// 解析返回页面判断是否登录成功
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	doc, err = goquery.NewDocumentFromReader(strings.NewReader(string(body)))
-	if err == nil {
-		errMsg := strings.TrimSpace(doc.Find("div#msg.errors").Text())
-		if strings.Contains(errMsg, "您输入的用户名或密码有误") {
-			return nil, errors.New(errMsg)
-		}
-	}
-
 	// 返回已带 cookie 的 client，调用方可以直接使用 client.Jar.Cookies(...)
 	return client, nil
 }
 
 // validateClient 状态验证，判断 cookie 是否有效
 func (g *grabberService) validateClient(client *http.Client) (bool, error) {
-	params := url.Values{}
-	params.Add("act", "get_History_resv")
-	params.Add("strat", "90")
-	params.Add("StatFlag", "New")
-	params.Add("_", "1763559000805")
-	requestURL := PersonUrl + "?" + params.Encode()
-	req, err := http.NewRequest("GET", requestURL, nil)
+	bodyBytes, err := crawler.FetchPersonUrl(client)
 	if err != nil {
-		g.log.Error("create HTTP request error",
-			zap.String("method", "GET"),
-			zap.String("url", requestURL),
-			zap.Error(err),
-		)
-		return false, err
-	}
-	req.Header.Set("Accept", "application/json, text/javascript, */*; q=0.01")
-	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Set("Pragma", "no-cache")
-	req.Header.Set("Referer", "http://kjyy.ccnu.edu.cn/clientweb/xcus/ic2/Default.aspx")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36")
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
-	resp, err := client.Do(req)
-	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return false, err
-	}
-
-	// 进一步检查返回体，未登录情况会返回 JSON 提示
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return false, err
+		return false, errs.CrawlerServerError(err)
 	}
 
 	// 尝试解析为 JSON，检查 msg 字段
 	var m map[string]interface{}
-	_ = json.Unmarshal(body, &m)
+	err = json.Unmarshal(bodyBytes, &m)
+	if err != nil {
+		return false, errs.InternalServerError(err)
+	}
 	if msg, ok := m["msg"].(string); ok {
 		if strings.Contains(msg, "未登录") || strings.Contains(msg, "登录超时") || strings.Contains(msg, "session =null") {
-			return false, err
+			return false, errs.UnauthorizedError(errors.New(msg))
 		}
 	}
 

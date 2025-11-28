@@ -29,13 +29,15 @@ func NewGinEngine(
 ) *gin.Engine {
 	gin.ForceConsoleColor()
 	r := gin.Default()
-	api := r.Group("/api/v1")
-	// 跨域
+
 	r.Use(corsMiddleware.MiddlewareFunc())
 	r.Use(logMiddleware.MiddlewareFunc())
+
+	api := r.Group("/api/v1")
 
 	hc.RegisterHealthCheckRouter(api)
 	lc.RegisterLoginRouter(api)
 	gc.RegisterGarbRouter(api, authMiddleware.MiddlewareFunc())
+
 	return r
 }

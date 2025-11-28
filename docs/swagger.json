@@ -1,8 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "CCNU 图书馆预约抢座 API",
+        "title": "CCNU 图书馆预约抢座 API",
+        "contact": {},
+        "version": "1.0"
     },
+    "host": "localhost:8080",
     "paths": {
         "/api/v1/ccnu/login": {
             "post": {
@@ -248,7 +252,7 @@
                 }
             }
         },
-        "/api/v1/garb/seatttoname": {
+        "/api/v1/garb/seattoname": {
             "post": {
                 "description": "座位号转名字接口",
                 "consumes": [
@@ -316,7 +320,7 @@
                 }
             }
         },
-        "/api/v1/health": {
+        "/api/v1/health/check": {
             "get": {
                 "description": "健康检查，返回当前服务占用的资源等信息",
                 "consumes": [

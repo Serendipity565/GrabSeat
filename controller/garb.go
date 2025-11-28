@@ -26,7 +26,7 @@ func (gc *GarbController) RegisterGarbRouter(r *gin.RouterGroup, authMiddleware 
 	c := r.Group("/garb")
 	{
 		c.POST("/findvacantseats", authMiddleware, ginx.WrapClaimsAndReq(gc.FindVacantSeats))
-		c.POST("/seatttoname", authMiddleware, ginx.WrapClaimsAndReq(gc.SeatToName))
+		c.POST("/seattoname", authMiddleware, ginx.WrapClaimsAndReq(gc.SeatToName))
 		c.POST("/isinlibrary", authMiddleware, ginx.WrapClaimsAndReq(gc.IsInLibrary))
 		c.POST("/garb", authMiddleware, ginx.WrapClaimsAndReq(gc.Garb))
 	}
@@ -80,13 +80,16 @@ func (gc *GarbController) FindVacantSeats(c *gin.Context, req request.FindVacant
 //	@Success		200				{object}	response.Response{data=[]response.Ts}	"成功返回座位号对应的名字"
 //	@Failure		400				{object}	response.Response						"请求参数错误"
 //	@Failure		500				{object}	response.Response						"服务器内部错误"
-//	@Router			/api/v1/garb/seatttoname [post]
+//	@Router			/api/v1/garb/seattoname [post]
 func (gc *GarbController) SeatToName(c *gin.Context, req request.SeatToNameReq, uc ijwt.UserClaims) (response.Response, error) {
 	client, err := gc.gs.GetClient(uc.UserId, uc.Password)
 	if err != nil {
 		return response.Response{}, err
 	}
 	ts, err := gc.gs.SeatToName(client, req.SeatName, *req.IsTomorrow)
+	if err != nil {
+		return response.Response{}, err
+	}
 	return response.Response{
 		Code: 0,
 		Msg:  "Success",
@@ -112,7 +115,10 @@ func (gc *GarbController) IsInLibrary(c *gin.Context, req request.IsInLibraryReq
 	if err != nil {
 		return response.Response{}, err
 	}
-	ot, _ := gc.gs.IsInLibrary(client, req.StudentName)
+	ot, err := gc.gs.IsInLibrary(client, req.StudentName)
+	if err != nil {
+		return response.Response{}, err
+	}
 	if ot != nil {
 		return response.Response{
 			Code: 0,

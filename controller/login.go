@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/Serendipity565/GrabSeat/api/request"
 	"github.com/Serendipity565/GrabSeat/api/response"
-	"github.com/Serendipity565/GrabSeat/errs"
 	"github.com/Serendipity565/GrabSeat/pkg/ginx"
 	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
 	"github.com/Serendipity565/GrabSeat/service"
@@ -46,7 +45,7 @@ func (lc *LoginController) Login(c *gin.Context, req request.LoginRequest) (resp
 	// 验证用户名和密码（这里假设验证通过）
 	_, err := lc.ls.Login2CAS(req.Username, req.Password)
 	if err != nil {
-		return response.Response{}, errs.UserIdOrPasswordError(err)
+		return response.Response{}, err
 	}
 	// 生成JWT令牌
 	token, _ := lc.jwtHandler.SetJWTToken(req.Username, req.Password)

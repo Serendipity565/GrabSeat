@@ -259,7 +259,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/garb/seatttoname": {
+        "/api/v1/garb/seattoname": {
             "post": {
                 "description": "座位号转名字接口",
                 "consumes": [
@@ -327,7 +327,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/health": {
+        "/api/v1/health/check": {
             "get": {
                 "description": "健康检查，返回当前服务占用的资源等信息",
                 "consumes": [
@@ -599,12 +599,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "CCNU 图书馆预约抢座 API",
+	Description:      "CCNU 图书馆预约抢座 API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -146,8 +146,12 @@ definitions:
       state:
         type: string
     type: object
+host: localhost:8080
 info:
   contact: {}
+  description: CCNU 图书馆预约抢座 API
+  title: CCNU 图书馆预约抢座 API
+  version: "1.0"
 paths:
   /api/v1/ccnu/login:
     post:
@@ -301,7 +305,7 @@ paths:
       summary: 检查目标用户当前是否在图书馆
       tags:
       - garb
-  /api/v1/garb/seatttoname:
+  /api/v1/garb/seattoname:
     post:
       consumes:
       - application/json
@@ -343,7 +347,7 @@ paths:
       summary: 座位号转名字接口
       tags:
       - garb
-  /api/v1/health:
+  /api/v1/health/check:
     get:
       consumes:
       - application/json
