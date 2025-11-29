@@ -2,27 +2,31 @@ package logger
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/Serendipity565/GrabSeat/config"
+	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func NewZapLogger() *ZapLogger {
-	// TODO 后续看需求改成日期日志等
-	out, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		out = os.Stderr
-	}
+func NewZapLogger(conf *config.LogConfig) *ZapLogger {
 	level := InfoLevel
 
 	al := zap.NewAtomicLevelAt(level)
 	cfg := zap.NewProductionEncoderConfig()
 	cfg.EncodeTime = zapcore.RFC3339TimeEncoder
 
+	lumberJackLogger := &lumberjack.Logger{
+		Filename:   conf.File,
+		MaxSize:    conf.MaxSize,    // 在进行切割之前，日志文件的最大大小（以MB为单位）
+		MaxBackups: conf.MaxBackups, // 保留旧文件的最大个数
+		MaxAge:     conf.MaxAge,     // 保留旧文件的最大天数
+		Compress:   conf.Compress,   // 是否压缩/归档旧文件
+	}
+
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(cfg),
-		zapcore.AddSync(out),
+		zapcore.AddSync(lumberJackLogger),
 		al,
 	)
 	return &ZapLogger{l: zap.New(core), al: &al}

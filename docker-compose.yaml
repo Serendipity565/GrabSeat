@@ -9,4 +9,19 @@ services:
     restart: always
     volumes:
       - ./configs/config.yaml:/app/config/config.yaml
-      - ./app.log:/app/app.log
+      - ./logs:/app/logs
+
+  redis:
+    image: bitnami/redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - ./data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      - ./logs:/log
+    environment:
+      - TZ=Asia/Shanghai
+      - ALLOW_EMPTY_PASSWORD=no
+      - REDIS_PASSWORD=your_redis_password_here
