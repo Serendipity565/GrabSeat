@@ -8,4 +8,5 @@ Thumbs.db
 
 config/config.yaml
 
-*.log
+# log file
+logs/*.log

@@ -8,3 +8,10 @@ jwt:
 middleware:
   allowedOrigins:
     - "*"  # 允许跨域访问的来源地址，例如前端开发服务器地址
+
+log:
+  file: "logs/app.log"  # 日志文件路径
+  maxSize: 5  # 单个日志文件的最大大小，单位为 MB
+  maxBackups: 10  # 保留的旧日志文件数量
+  maxAge: 30  # 日志文件的最大保存天数
+  compress: false  # 是否压缩旧日志文件
