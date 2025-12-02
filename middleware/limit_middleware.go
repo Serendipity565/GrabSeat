@@ -18,7 +18,7 @@ var limiterScriptSource string // lua 脚本内容将被加载到这个字符串
 
 type LimitMiddleware struct {
 	capacity     int // 容量
-	fillInterval int // 发放令牌速率/秒
+	fillInterval int // 每秒补充令牌的次数
 	quantum      int // 每次发放令牌数量
 	client       redis.Cmdable
 	script       *redis.Script
@@ -37,6 +37,7 @@ func NewLimitMiddleware(conf *config.LimiterConfig, client redis.Cmdable) *Limit
 func (m *LimitMiddleware) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		prefix := "ratelimit-global-"
+		// TODO: Implement per-user rate limiting
 		// 从上下文取出 claims（镜像 SetClaims 的接口）
 		//claims, err := ginx.GetClaims(ctx)
 		//if err != nil {

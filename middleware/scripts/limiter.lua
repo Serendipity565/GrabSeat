@@ -57,10 +57,14 @@ end
 if available >= count then
     available = available - count
     redis.call("SET", availableKey, available)
+    redis.call("EXPIRE", availableKey, 3600)  -- 1 hour TTL
     redis.call("SET", latestKey, math.floor(latestTime))
+    redis.call("EXPIRE", latestKey, 3600)
     return 1   -- success
 else
     redis.call("SET", availableKey, available)
+    redis.call("EXPIRE", availableKey, 3600)  -- 1 hour TTL
     redis.call("SET", latestKey, math.floor(latestTime))
+    redis.call("EXPIRE", latestKey, 3600)
     return 0   -- not enough tokens
 end

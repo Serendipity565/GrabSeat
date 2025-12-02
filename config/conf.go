@@ -59,7 +59,7 @@ func NewLogConfig() *LogConfig {
 
 type LimiterConfig struct {
 	Capacity     int `yaml:"capacity"`     //令牌桶容量
-	FillInterval int `yaml:"fillInterval"` //放置令牌的时间间隔(每秒多少次)
+	FillInterval int `yaml:"fillInterval"` //每秒补充令牌的次
 	Quantum      int `yaml:"quantum"`      //每次放置的令牌数
 }
 
@@ -68,6 +68,9 @@ func NewLimiterConfig() *LimiterConfig {
 	err := viper.UnmarshalKey("limiter", &cfg)
 	if err != nil {
 		panic(fmt.Sprintf("无法解析限流器配置: %v", err))
+	}
+	if cfg.Capacity <= 0 || cfg.FillInterval <= 0 || cfg.Quantum <= 0 {
+		panic("限流器配置无效: capacity, fillInterval, 和 quantum 必须大于 0")
 	}
 
 	return cfg
@@ -84,6 +87,9 @@ func NewRedisConfig() *RedisConfig {
 	err := viper.UnmarshalKey("redis", &cfg)
 	if err != nil {
 		panic(fmt.Sprintf("无法解析 Redis 配置: %v", err))
+	}
+	if cfg.Addr == "" {
+		panic("Redis 配置无效: addr 不能为空")
 	}
 
 	return cfg
