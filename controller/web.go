@@ -26,12 +26,14 @@ func NewGinEngine(
 	corsMiddleware *middleware.CorsMiddleware,
 	authMiddleware *middleware.AuthMiddleware,
 	logMiddleware *middleware.LoggerMiddleware,
+	limitMiddleware *middleware.LimitMiddleware,
 ) *gin.Engine {
 	gin.ForceConsoleColor()
 	r := gin.Default()
 
 	r.Use(corsMiddleware.MiddlewareFunc())
 	r.Use(logMiddleware.MiddlewareFunc())
+	r.Use(limitMiddleware.Middleware())
 
 	api := r.Group("/api/v1")
 

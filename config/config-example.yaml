@@ -15,3 +15,14 @@ log:
   maxBackups: 10  # 保留的旧日志文件数量
   maxAge: 30  # 日志文件的最大保存天数
   compress: false  # 是否压缩旧日志文件
+
+# 请求限流配置(令牌桶算法)
+limiter:
+  capacity: 100  # 令牌桶容量
+  fillInterval: 10 #放置令牌的时间间隔(每秒多少次)
+  quantum: 1 #每次放置的令牌数
+
+redis:
+  addr: "localhost:6379"
+  password: "****"
+  db: 0
