@@ -8,6 +8,7 @@ import (
 	"github.com/Serendipity565/GrabSeat/ioc"
 	"github.com/Serendipity565/GrabSeat/middleware"
 	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
+	"github.com/Serendipity565/GrabSeat/pkg/logger"
 	"github.com/Serendipity565/GrabSeat/service"
 	"github.com/google/wire"
 )
@@ -18,6 +19,7 @@ func InitApp() *App {
 		config.ProviderSet,
 		ioc.ProviderSet,
 		ijwt.NewJWT,
+		logger.NewZapLogger,
 		middleware.NewCorsMiddleware,
 		middleware.NewAuthMiddleware,
 		middleware.NewLoggerMiddleware,

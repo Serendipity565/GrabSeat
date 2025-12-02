@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func InitLogger(conf *config.LogConfig) logger.Logger {
+func InitLogger(conf *config.LogConfig) *zap.Logger {
 	level := logger.InfoLevel
 
 	al := zap.NewAtomicLevelAt(level)
@@ -28,8 +28,5 @@ func InitLogger(conf *config.LogConfig) logger.Logger {
 		zapcore.AddSync(lumberJackLogger),
 		al,
 	)
-	return &logger.ZapLogger{
-		L:  zap.New(core),
-		Al: &al,
-	}
+	return zap.New(core)
 }

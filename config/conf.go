@@ -16,7 +16,7 @@ type JWTConfig struct {
 }
 
 func NewJWTConfig() *JWTConfig {
-	var cfg *JWTConfig
+	cfg := &JWTConfig{}
 	err := viper.UnmarshalKey("jwt", &cfg)
 	if err != nil {
 		panic(fmt.Sprintf("无法解析 JWT 配置: %v", err))
@@ -30,7 +30,7 @@ type MiddlewareConfig struct {
 }
 
 func NewMiddlewareConfig() *MiddlewareConfig {
-	var cfg *MiddlewareConfig
+	cfg := &MiddlewareConfig{}
 	err := viper.UnmarshalKey("middleware", &cfg)
 	if err != nil {
 		panic(fmt.Sprintf("无法解析中间件配置: %v", err))
@@ -48,7 +48,7 @@ type LogConfig struct {
 }
 
 func NewLogConfig() *LogConfig {
-	var cfg *LogConfig
+	cfg := &LogConfig{}
 	err := viper.UnmarshalKey("log", &cfg)
 	if err != nil {
 		panic(fmt.Sprintf("无法解析日志配置: %v", err))
@@ -59,12 +59,12 @@ func NewLogConfig() *LogConfig {
 
 type LimiterConfig struct {
 	Capacity     int `yaml:"capacity"`     // 令牌桶容量
-	FillInterval int `yaml:"fillInterval"` // 每秒补充令牌的次
+	FillInterval int `yaml:"fillInterval"` // 每秒补充令牌的次数
 	Quantum      int `yaml:"quantum"`      // 每次放置的令牌数
 }
 
 func NewLimiterConfig() *LimiterConfig {
-	var cfg *LimiterConfig
+	cfg := &LimiterConfig{}
 	err := viper.UnmarshalKey("limiter", &cfg)
 	if err != nil {
 		panic(fmt.Sprintf("无法解析限流器配置: %v", err))
@@ -83,7 +83,7 @@ type RedisConfig struct {
 }
 
 func NewRedisConfig() *RedisConfig {
-	var cfg *RedisConfig
+	cfg := &RedisConfig{}
 	err := viper.UnmarshalKey("redis", &cfg)
 	if err != nil {
 		panic(fmt.Sprintf("无法解析 Redis 配置: %v", err))

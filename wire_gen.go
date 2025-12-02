@@ -12,6 +12,7 @@ import (
 	"github.com/Serendipity565/GrabSeat/ioc"
 	"github.com/Serendipity565/GrabSeat/middleware"
 	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
+	"github.com/Serendipity565/GrabSeat/pkg/logger"
 	"github.com/Serendipity565/GrabSeat/service"
 )
 
@@ -25,13 +26,14 @@ func InitApp() *App {
 	loginService := service.NewLoginService()
 	loginController := controller.NewLoginController(jwt, loginService)
 	logConfig := config.NewLogConfig()
-	logger := ioc.InitLogger(logConfig)
-	grabberService := service.NewGrabberService(logger)
+	zapLogger := ioc.InitLogger(logConfig)
+	loggerLogger := logger.NewZapLogger(zapLogger)
+	grabberService := service.NewGrabberService(loggerLogger)
 	garbController := controller.NewGarbHandler(grabberService)
 	middlewareConfig := config.NewMiddlewareConfig()
 	corsMiddleware := middleware.NewCorsMiddleware(middlewareConfig)
 	authMiddleware := middleware.NewAuthMiddleware(jwt)
-	loggerMiddleware := middleware.NewLoggerMiddleware(logger)
+	loggerMiddleware := middleware.NewLoggerMiddleware(loggerLogger)
 	limiterConfig := config.NewLimiterConfig()
 	redisConfig := config.NewRedisConfig()
 	cmdable := ioc.InitRedis(redisConfig)

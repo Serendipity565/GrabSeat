@@ -4,35 +4,38 @@ import (
 	"go.uber.org/zap"
 )
 
+func NewZapLogger(l *zap.Logger) Logger {
+	return &ZapLogger{l: l}
+}
+
 type ZapLogger struct {
-	L  *zap.Logger
-	Al *zap.AtomicLevel
+	l *zap.Logger
 }
 
 func (l *ZapLogger) Debug(msg string, fields ...Field) {
-	l.L.Debug(msg, fields...)
+	l.l.Debug(msg, fields...)
 }
 
 func (l *ZapLogger) Info(msg string, fields ...Field) {
-	l.L.Info(msg, fields...)
+	l.l.Info(msg, fields...)
 }
 
 func (l *ZapLogger) Warn(msg string, fields ...Field) {
-	l.L.Warn(msg, fields...)
+	l.l.Warn(msg, fields...)
 }
 
 func (l *ZapLogger) Error(msg string, fields ...Field) {
-	l.L.Error(msg, fields...)
+	l.l.Error(msg, fields...)
 }
 
 func (l *ZapLogger) Panic(msg string, fields ...Field) {
-	l.L.Panic(msg, fields...)
+	l.l.Panic(msg, fields...)
 }
 
 func (l *ZapLogger) Fatal(msg string, fields ...Field) {
-	l.L.Fatal(msg, fields...)
+	l.l.Fatal(msg, fields...)
 }
 
 func (l *ZapLogger) Sync() error {
-	return l.L.Sync()
+	return l.l.Sync()
 }
