@@ -58,9 +58,9 @@ func NewLogConfig() *LogConfig {
 }
 
 type LimiterConfig struct {
-	Capacity     int `yaml:"capacity"`     //令牌桶容量
-	FillInterval int `yaml:"fillInterval"` //每秒补充令牌的次
-	Quantum      int `yaml:"quantum"`      //每次放置的令牌数
+	Capacity     int `yaml:"capacity"`     // 令牌桶容量
+	FillInterval int `yaml:"fillInterval"` // 每秒补充令牌的次
+	Quantum      int `yaml:"quantum"`      // 每次放置的令牌数
 }
 
 func NewLimiterConfig() *LimiterConfig {
