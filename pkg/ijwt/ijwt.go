@@ -22,7 +22,7 @@ type JWT struct {
 	encKey        []byte            // 用于加密敏感信息的密钥
 }
 
-func NewJWT(conf config.JWTConfig) *JWT {
+func NewJWT(conf *config.JWTConfig) *JWT {
 	return &JWT{
 		signingMethod: jwt.SigningMethodHS256, //签名的加密方式
 		rcExpiration:  time.Duration(conf.Timeout) * time.Second,

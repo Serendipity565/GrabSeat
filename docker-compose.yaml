@@ -1,16 +1,6 @@
 version: '3'
 
 services:
-  grabseat:
-    image: crpi-sr2lroozs2i0nbuc.cn-hangzhou.personal.cr.aliyuncs.com/serendipity565/serendipity565:grabseat
-    container_name: grabseat
-    ports:
-      - "8080:8080"
-    restart: always
-    volumes:
-      - ./configs/config.yaml:/app/config/config.yaml
-      - ./logs:/app/logs
-
   redis:
     image: bitnami/redis:7.2
     container_name: redis
@@ -24,4 +14,4 @@ services:
     environment:
       - TZ=Asia/Shanghai
       - ALLOW_EMPTY_PASSWORD=no
-      - REDIS_PASSWORD=your_redis_password_here
+      - REDIS_PASSWORD=****

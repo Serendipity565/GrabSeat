@@ -9,6 +9,7 @@ package main
 import (
 	"github.com/Serendipity565/GrabSeat/config"
 	"github.com/Serendipity565/GrabSeat/controller"
+	"github.com/Serendipity565/GrabSeat/ioc"
 	"github.com/Serendipity565/GrabSeat/middleware"
 	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
 	"github.com/Serendipity565/GrabSeat/pkg/logger"
@@ -25,14 +26,19 @@ func InitApp() *App {
 	loginService := service.NewLoginService()
 	loginController := controller.NewLoginController(jwt, loginService)
 	logConfig := config.NewLogConfig()
-	zapLogger := logger.NewZapLogger(logConfig)
-	grabberService := service.NewGrabberService(zapLogger)
+	zapLogger := ioc.InitLogger(logConfig)
+	loggerLogger := logger.NewZapLogger(zapLogger)
+	grabberService := service.NewGrabberService(loggerLogger)
 	garbController := controller.NewGarbHandler(grabberService)
 	middlewareConfig := config.NewMiddlewareConfig()
 	corsMiddleware := middleware.NewCorsMiddleware(middlewareConfig)
 	authMiddleware := middleware.NewAuthMiddleware(jwt)
-	loggerMiddleware := middleware.NewLoggerMiddleware(zapLogger)
-	engine := controller.NewGinEngine(healthCheckController, loginController, garbController, corsMiddleware, authMiddleware, loggerMiddleware)
+	loggerMiddleware := middleware.NewLoggerMiddleware(loggerLogger)
+	limiterConfig := config.NewLimiterConfig()
+	redisConfig := config.NewRedisConfig()
+	cmdable := ioc.InitRedis(redisConfig)
+	limitMiddleware := middleware.NewLimitMiddleware(limiterConfig, cmdable)
+	engine := controller.NewGinEngine(healthCheckController, loginController, garbController, corsMiddleware, authMiddleware, loggerMiddleware, limitMiddleware)
 	ticker := service.NewTicker()
 	app := &App{
 		r: engine,
