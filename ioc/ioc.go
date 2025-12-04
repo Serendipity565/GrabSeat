@@ -4,4 +4,4 @@ import (
 	"github.com/google/wire"
 )
 
-var ProviderSet = wire.NewSet(InitRedis, InitLogger)
+var ProviderSet = wire.NewSet(InitRedis, InitLogger, InitPrometheus)

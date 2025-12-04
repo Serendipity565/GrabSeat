@@ -4,6 +4,7 @@ import (
 	"github.com/Serendipity565/GrabSeat/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 //	@title			CCNU 图书馆预约抢座 API
@@ -27,13 +28,21 @@ func NewGinEngine(
 	authMiddleware *middleware.AuthMiddleware,
 	logMiddleware *middleware.LoggerMiddleware,
 	limitMiddleware *middleware.LimitMiddleware,
+	prometheusMiddleware *middleware.PrometheusMiddleware,
 ) *gin.Engine {
 	gin.ForceConsoleColor()
 	r := gin.Default()
 
 	r.Use(corsMiddleware.MiddlewareFunc())
 	r.Use(logMiddleware.MiddlewareFunc())
+	r.Use(prometheusMiddleware.MiddlewareFunc())
 	r.Use(limitMiddleware.Middleware())
+
+	reg := prometheusMiddleware.GetRegistry()
+	r.GET("/metrics", gin.WrapH(promhttp.HandlerFor(
+		reg,
+		promhttp.HandlerOpts{Registry: reg},
+	)))
 
 	api := r.Group("/api/v1")
 

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Serendipity565/GrabSeat/api/request"
@@ -106,7 +105,7 @@ func (gc *GarbController) SeatToName(c *gin.Context, req request.SeatToNameReq, 
 //	@Produce		json
 //	@Param			Authorization	header		string							true	"Bearer {{JWT}}"
 //	@Param			request			body		request.IsInLibraryReq			true	"检查目标用户当前是否在图书馆请求参数"
-//	@Success		200				{object}	response.Response{data=string}	"成功返回在图书馆的时间段"
+//	@Success		200				{object}	response.Response{data=response.Occupant}	"成功返回在图书馆的时间段"
 //	@Failure		400				{object}	response.Response				"请求参数错误"
 //	@Failure		500				{object}	response.Response				"服务器内部错误"
 //	@Router			/api/v1/garb/isinlibrary [post]
@@ -119,19 +118,12 @@ func (gc *GarbController) IsInLibrary(c *gin.Context, req request.IsInLibraryReq
 	if err != nil {
 		return response.Response{}, err
 	}
-	if ot != nil {
-		return response.Response{
-			Code: 0,
-			Msg:  "Success",
-			Data: fmt.Sprintf("在图书馆的%s，%s - %s\n", ot.Title, ot.Start, ot.End),
-		}, nil
-	} else {
-		return response.Response{
-			Code: 0,
-			Msg:  "Success",
-			Data: "不在图书馆",
-		}, nil
-	}
+	return response.Response{
+		Code: 0,
+		Msg:  "Success",
+		Data: ot,
+	}, nil
+
 }
 
 // Garb 抢座接口

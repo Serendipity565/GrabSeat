@@ -36,18 +36,11 @@ func NewLimitMiddleware(conf *config.LimiterConfig, client redis.Cmdable) *Limit
 
 func (m *LimitMiddleware) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		prefix := "ratelimit-global-"
-		// TODO: Implement per-user rate limiting
-		// 从上下文取出 claims（镜像 SetClaims 的接口）
-		//claims, err := ginx.GetClaims(ctx)
-		//if err != nil {
-		//
-		//} else {
-		//	userID := claims.ID
-		//	prefix = "ratelimit-" + userID + "-"
-		//}
+		prefix := ctx.FullPath()
+		if prefix == "" {
+			prefix = ctx.Request.URL.Path
+		}
 
-		// 使用全局限流
 		availableKey := prefix + "tokens"
 		latestKey := prefix + "ts"
 		now := time.Now().UnixMilli()
