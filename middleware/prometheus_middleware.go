@@ -55,6 +55,10 @@ func (pm *PrometheusMiddleware) MiddlewareFunc() gin.HandlerFunc {
 			// prometheus 使用 "unknown" 作为标签值防止爆炸
 			path = "unknown"
 		}
+		if path == "/metrics" {
+			// 跳过 /metrics 路由的监控
+			return
+		}
 
 		method := ctx.Request.Method
 		status := strconv.Itoa(ctx.Writer.Status())
