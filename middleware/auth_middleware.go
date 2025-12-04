@@ -16,8 +16,8 @@ import (
 var (
 	userCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "",
-			Help: "",
+			Name: "per_user_requests",
+			Help: "Total number of requests per user",
 		},
 		[]string{"user"},
 	)

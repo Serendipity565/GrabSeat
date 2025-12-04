@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Serendipity565/GrabSeat/api/response"
@@ -36,10 +37,11 @@ func NewLimitMiddleware(conf *config.LimiterConfig, client redis.Cmdable) *Limit
 
 func (m *LimitMiddleware) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		prefix := ctx.FullPath()
-		if prefix == "" {
-			prefix = ctx.Request.URL.Path
+		prefix := "ratelimit:" + strings.ReplaceAll(ctx.FullPath(), ":", "_")
+		if prefix == "ratelimit:" {
+			prefix = "ratelimit:" + strings.ReplaceAll(ctx.Request.URL.Path, ":", "_")
 		}
+		prefix = prefix + "_"
 
 		availableKey := prefix + "tokens"
 		latestKey := prefix + "ts"
