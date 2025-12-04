@@ -37,9 +37,10 @@ func NewLimitMiddleware(conf *config.LimiterConfig, client redis.Cmdable) *Limit
 
 func (m *LimitMiddleware) Middleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		prefix := "ratelimit:" + strings.ReplaceAll(ctx.FullPath(), ":", "_")
-		if prefix == "ratelimit:" {
-			prefix = "ratelimit:" + strings.ReplaceAll(ctx.Request.URL.Path, ":", "_")
+		prefix := "limit" + strings.ReplaceAll(ctx.FullPath(), ":", "_")
+		if prefix == "limit:" {
+			// 未注册路由使用统一前缀,避免浪费 redis 资源
+			prefix = "limit_unregistered"
 		}
 		prefix = prefix + "_"
 
