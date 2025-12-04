@@ -8,8 +8,19 @@ import (
 	"github.com/Serendipity565/GrabSeat/api/response"
 	"github.com/Serendipity565/GrabSeat/pkg/ginx"
 	"github.com/Serendipity565/GrabSeat/pkg/ijwt"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/gin-gonic/gin"
+)
+
+var (
+	userCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "per_user_requests",
+			Help: "Total number of requests per user",
+		},
+		[]string{"user"},
+	)
 )
 
 type AuthMiddleware struct {
@@ -57,6 +68,8 @@ func (am *AuthMiddleware) MiddlewareFunc() gin.HandlerFunc {
 		}
 
 		ginx.SetClaims(ctx, uc)
+
+		userCount.WithLabelValues(uc.UserId).Inc()
 
 		// 继续处理请求
 		ctx.Next()

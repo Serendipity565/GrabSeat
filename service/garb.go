@@ -18,6 +18,11 @@ import (
 
 var (
 	Areas = []string{"101699191", "101699189", "101699187", "101699179"}
+	State = map[string]string{
+		"doing":    "使用中",
+		"undo":     "未使用",
+		"notfound": "未预约",
+	}
 )
 
 type GrabberService interface {
@@ -121,10 +126,11 @@ func (g *grabberService) IsInLibrary(client *http.Client, name string) (*respons
 
 		for _, locationInfo := range bodyData.Data {
 			for _, t := range locationInfo.Ts {
-				if t.Owner == name && t.State == "doing" {
+				if t.Owner == name {
 					return &response.Occupant{
 						Title: locationInfo.Title,
 						Name:  name,
+						State: State[t.State],
 						Start: t.Start[len(t.Start)-5:],
 						End:   t.End[len(t.End)-5:],
 					}, nil
@@ -132,8 +138,14 @@ func (g *grabberService) IsInLibrary(client *http.Client, name string) (*respons
 			}
 		}
 	}
-	// 找不到返回为空
-	return nil, nil
+	// 找不到返回未预约
+	return &response.Occupant{
+		Title: "",
+		Name:  name,
+		State: State["notfound"],
+		Start: "",
+		End:   "",
+	}, nil
 }
 
 // SeatToName 座位号转姓名: 查看该座位的预约信息，可以看到预约人是谁

@@ -23,6 +23,7 @@ func InitApp() *App {
 		middleware.NewCorsMiddleware,
 		middleware.NewAuthMiddleware,
 		middleware.NewLoggerMiddleware,
+		middleware.NewPrometheusMiddleware,
 		middleware.NewLimitMiddleware,
 		service.ProviderSet,
 		controller.ProviderSet,

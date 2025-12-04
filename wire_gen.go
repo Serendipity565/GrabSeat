@@ -38,7 +38,9 @@ func InitApp() *App {
 	redisConfig := config.NewRedisConfig()
 	cmdable := ioc.InitRedis(redisConfig)
 	limitMiddleware := middleware.NewLimitMiddleware(limiterConfig, cmdable)
-	engine := controller.NewGinEngine(healthCheckController, loginController, garbController, corsMiddleware, authMiddleware, loggerMiddleware, limitMiddleware)
+	registry := ioc.InitPrometheus()
+	prometheusMiddleware := middleware.NewPrometheusMiddleware(registry)
+	engine := controller.NewGinEngine(healthCheckController, loginController, garbController, corsMiddleware, authMiddleware, loggerMiddleware, limitMiddleware, prometheusMiddleware)
 	ticker := service.NewTicker()
 	app := &App{
 		r: engine,

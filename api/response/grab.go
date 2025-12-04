@@ -16,6 +16,7 @@ type Ts struct { // 预约信息
 type Occupant struct {
 	Title string `json:"title"`
 	Name  string `json:"name"`
+	State string `json:"state"`
 	Start string `json:"start"`
 	End   string `json:"end"`
 }
