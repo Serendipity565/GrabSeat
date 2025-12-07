@@ -26,6 +26,7 @@ func NewGinEngine(
 
 	corsMiddleware *middleware.CorsMiddleware,
 	authMiddleware *middleware.AuthMiddleware,
+	basicAuthMiddleware *middleware.BasicAuthMiddleware,
 	logMiddleware *middleware.LoggerMiddleware,
 	limitMiddleware *middleware.LimitMiddleware,
 	prometheusMiddleware *middleware.PrometheusMiddleware,
@@ -38,10 +39,11 @@ func NewGinEngine(
 	r.Use(prometheusMiddleware.MiddlewareFunc())
 	r.Use(limitMiddleware.Middleware())
 
+	// Prometheus metrics endpoint with basic auth
 	reg := prometheusMiddleware.GetRegistry()
-	r.GET("/metrics", gin.WrapH(promhttp.HandlerFor(
+	r.GET("/metrics", basicAuthMiddleware.MiddlewareFunc(), gin.WrapH(promhttp.HandlerFor(
 		reg,
-		promhttp.HandlerOpts{Registry: reg},
+		promhttp.HandlerOpts{},
 	)))
 
 	api := r.Group("/api/v1")

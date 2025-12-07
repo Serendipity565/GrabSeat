@@ -7,7 +7,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-var ProviderSet = wire.NewSet(NewJWTConfig, NewMiddlewareConfig, NewLogConfig, NewLimiterConfig, NewRedisConfig)
+var ProviderSet = wire.NewSet(
+	NewJWTConfig,
+	NewMiddlewareConfig,
+	NewLogConfig,
+	NewLimiterConfig,
+	NewBasicAuthConfig,
+	NewRedisConfig,
+)
 
 type JWTConfig struct {
 	JwtKey  string `yaml:"jwtKey"` //秘钥
@@ -74,6 +81,28 @@ func NewLimiterConfig() *LimiterConfig {
 	}
 
 	return cfg
+}
+
+type BasicAuthConfig struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
+func NewBasicAuthConfig() []BasicAuthConfig {
+	var users []BasicAuthConfig
+	err := viper.UnmarshalKey("basicAuth", &users)
+	if err != nil {
+		panic(fmt.Sprintf("无法解析 BasicAuth 配置: %v", err))
+	}
+	if len(users) == 0 {
+		panic("BasicAuth 配置无效: 至少需要一个用户")
+	}
+	for _, u := range users {
+		if u.Username == "" || u.Password == "" {
+			panic("BasicAuth 配置无效: username 和 password 不能为空")
+		}
+	}
+	return users
 }
 
 type RedisConfig struct {
