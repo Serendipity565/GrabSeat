@@ -11,7 +11,7 @@ import (
 var (
 	reqCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_requests_total",
+			Name: "gin_http_requests_total",
 			Help: "Total number of HTTP requests",
 		},
 		[]string{"method", "path", "status"},
@@ -19,7 +19,7 @@ var (
 
 	reqDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name:    "http_request_duration_seconds",
+			Name:    "gin_http_request_duration_seconds",
 			Help:    "Histogram of request durations",
 			Buckets: prometheus.DefBuckets,
 		},
