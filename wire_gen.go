@@ -33,6 +33,8 @@ func InitApp() *App {
 	middlewareConfig := config.NewMiddlewareConfig()
 	corsMiddleware := middleware.NewCorsMiddleware(middlewareConfig)
 	authMiddleware := middleware.NewAuthMiddleware(jwt)
+	v := config.NewBasicAuthConfig()
+	basicAuthMiddleware := middleware.NewBasicAuthMiddleware(v)
 	loggerMiddleware := middleware.NewLoggerMiddleware(loggerLogger)
 	limiterConfig := config.NewLimiterConfig()
 	redisConfig := config.NewRedisConfig()
@@ -40,7 +42,7 @@ func InitApp() *App {
 	limitMiddleware := middleware.NewLimitMiddleware(limiterConfig, cmdable)
 	registry := ioc.InitPrometheus()
 	prometheusMiddleware := middleware.NewPrometheusMiddleware(registry)
-	engine := controller.NewGinEngine(healthCheckController, loginController, garbController, corsMiddleware, authMiddleware, loggerMiddleware, limitMiddleware, prometheusMiddleware)
+	engine := controller.NewGinEngine(healthCheckController, loginController, garbController, corsMiddleware, authMiddleware, basicAuthMiddleware, loggerMiddleware, limitMiddleware, prometheusMiddleware)
 	ticker := service.NewTicker()
 	app := &App{
 		r: engine,

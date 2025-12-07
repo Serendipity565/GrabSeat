@@ -22,6 +22,7 @@ func InitApp() *App {
 		logger.NewZapLogger,
 		middleware.NewCorsMiddleware,
 		middleware.NewAuthMiddleware,
+		middleware.NewBasicAuthMiddleware,
 		middleware.NewLoggerMiddleware,
 		middleware.NewPrometheusMiddleware,
 		middleware.NewLimitMiddleware,

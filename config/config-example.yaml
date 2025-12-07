@@ -22,6 +22,10 @@ limiter:
   fillInterval: 10 # 每秒补充令牌的次数
   quantum: 1 # 每次放置的令牌数
 
+basicAuth:
+  - username: "admin"
+    password: "****"
+
 redis:
   addr: "localhost:6379"
   password: "****"
