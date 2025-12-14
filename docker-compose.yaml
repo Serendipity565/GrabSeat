@@ -1,6 +1,13 @@
 version: '3'
 
 services:
+  grabseat:
+    image: grabseat:${VERSION}
+    container_name: grabseat
+    restart: always
+    ports:
+      - "8080:8080"
+
   redis:
     image: bitnami/redis:7.2
     container_name: redis
