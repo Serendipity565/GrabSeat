@@ -90,7 +90,7 @@ jobs:
             --password-stdin \
             ${{ secrets.ALIYUN_REGISTRY }}
             echo 'VERSION=${{ needs.test.outputs.id }}' > .env
-            sudo docker compose pull
-            sudo docker compose up -d
-            sudo docker image prune -a -f
+            docker compose pull
+            docker compose up -d
+            docker image prune -a -f
           "
